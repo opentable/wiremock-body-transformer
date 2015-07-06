@@ -20,15 +20,16 @@ public class BodyTransformerTest {
 			.willReturn(aResponse()
 				.withStatus(200)
 				.withHeader("content-type", "application/json")
-				.withBody("{\"var\":$(var), \"got\":\"it\"}")));
+				.withBody("{\"var\":$(var), \"got\":\"it\"}")
+				.withTransform("body-transformer")));
 
 
 		given()
 			.contentType("application/json")
 			.body("{\"var\":1111}")
-		.when()
+			.when()
 			.post("/get/this")
-		.then()
+			.then()
 			.statusCode(200)
 			.body("var", equalTo(1111))
 			.body("got", equalTo("it"));
@@ -42,7 +43,9 @@ public class BodyTransformerTest {
 			.willReturn(aResponse()
 				.withStatus(200)
 				.withHeader("content-type", "application/json")
-				.withBody("{\"var\":$(var), \"got\":\"it\", \"nested_attr\": \"$(nested.attr)\"}")));
+				.withBody("{\"var\":$(var), \"got\":\"it\", \"nested_attr\": \"$(nested.attr)\"}")
+				.withTransform("body-transformer")));
+
 
 		given()
 			.contentType("application/json")
@@ -64,14 +67,15 @@ public class BodyTransformerTest {
 			.willReturn(aResponse()
 				.withStatus(200)
 				.withHeader("content-type", "application/json")
-				.withBody("{\"var\":$(var)}")));
+				.withBody("{\"var\":$(var)}")
+				.withTransform("body-transformer")));
 
 		given()
 			.contentType("application/json")
 			.body("{\"something\":\"different\"}")
-		.when()
+			.when()
 			.post("/get/this")
-		.then()
+			.then()
 			.statusCode(200)
 			.body("var", equalTo(null));
 

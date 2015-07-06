@@ -40,6 +40,11 @@ public class BodyTransformer extends ResponseTransformer {
         return "body-transformer";
     }
 
+    @Override
+    public boolean applyGlobally() {
+        return false;
+    }
+
     private String transformResponse(Map requestObject, String response) {
         String modifiedResponse = response;
 
