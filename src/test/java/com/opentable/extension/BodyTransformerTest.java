@@ -1,5 +1,6 @@
 package com.opentable.extension;
 
+import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -80,5 +81,23 @@ public class BodyTransformerTest {
 			.body("var", equalTo(null));
 
 		wireMockRule.verify(postRequestedFor(urlEqualTo("/get/this")));
+	}
+
+	@Test
+	public void doesNotApplyGlobally() throws Exception {
+		wireMockRule.stubFor(post(urlEqualTo("/get/this"))
+			.willReturn(aResponse()
+				.withStatus(200)
+				.withHeader("content-type", "application/json")
+				.withBody("{\"var\":$(var)}")));
+
+		given()
+			.contentType("application/json")
+			.body("{\"var\":\"foo\"}")
+		.when()
+			.post("/get/this")
+		.then()
+			.statusCode(200)
+			.body(equalTo("{\"var\":$(var)}"));
 	}
 }
