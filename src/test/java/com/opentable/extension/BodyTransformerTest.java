@@ -99,5 +99,7 @@ public class BodyTransformerTest {
 		.then()
 			.statusCode(200)
 			.body(equalTo("{\"var\":$(var)}"));
+
+		wireMockRule.verify(postRequestedFor(urlEqualTo("/get/this")));
 	}
 }
