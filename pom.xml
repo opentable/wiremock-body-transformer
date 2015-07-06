@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.opentable</groupId>
+    <artifactId>wiremock-body-transformer</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <distributionManagement>
+        <repository>
+            <id>opentable</id>
+            <name>Internal Release Repository</name>
+            <url>http://artifactory.otenv.com:8081/artifactory/internal</url>
+        </repository>
+        <snapshotRepository>
+            <id>opentable.snapshot</id>
+            <name>Internal Snapshot Repository</name>
+            <url>http://artifactory.otenv.com:8081/artifactory/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+    <dependencies>
+        <dependency>
+        <groupId>com.github.tomakehurst</groupId>
+        <artifactId>wiremock</artifactId>
+        <version>1.53</version>
+        </dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.11</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.jayway.restassured</groupId>
+			<artifactId>rest-assured</artifactId>
+			<version>2.4.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.jayway.restassured</groupId>
+			<artifactId>json-path</artifactId>
+			<version>2.4.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.jayway.restassured</groupId>
+			<artifactId>json-schema-validator</artifactId>
+			<version>2.4.1</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+</project>
