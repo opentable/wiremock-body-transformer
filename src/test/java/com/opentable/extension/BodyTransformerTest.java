@@ -27,9 +27,9 @@ public class BodyTransformerTest {
 		given()
 			.contentType("application/json")
 			.body("{\"var\":1111}")
-			.when()
+		.when()
 			.post("/get/this")
-			.then()
+		.then()
 			.statusCode(200)
 			.body("var", equalTo(1111))
 			.body("got", equalTo("it"));
@@ -73,9 +73,9 @@ public class BodyTransformerTest {
 		given()
 			.contentType("application/json")
 			.body("{\"something\":\"different\"}")
-			.when()
+		.when()
 			.post("/get/this")
-			.then()
+		.then()
 			.statusCode(200)
 			.body("var", equalTo(null));
 
