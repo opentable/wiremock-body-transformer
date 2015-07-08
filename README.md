@@ -11,6 +11,28 @@ Built on the extensions platform of Wiremock, it allows your wiremock response t
 </dependency>
 ```
 
+###How It Works
+The response body stub acts as a template where the variables come from the request JSON object similar to string interpolation.
+The variable fields are injected via the `$(foo)` notation, where 'foo' is a json field in the request body, as in:
+```
+{
+    "foo": "bar"
+}
+```
+
+###Nested Fields
+You can specify nested fields via dot notations.
+For example:
+```
+{
+	"foo": {
+		"bar": "opentable"
+	}
+}
+```
+The attribute `opentable` is referenced via `$(foo.bar)` in your response body.
+
+
 ###Usage
 
 ####As part of [Unit Testing with Wiremock](http://wiremock.org/extending-wiremock.html): 
@@ -23,7 +45,7 @@ Specifying the transformer when stubbing.
 ```
 wireMock.stubFor(get(urlEqualTo("/local-transform")).willReturn(aResponse()
         .withStatus(200)
-        .withBody("Original body")
+        .withBody("{\"name\": \"$(var)\"}")
         .withTransformers("body-transformer")));
 ```
 
@@ -42,9 +64,44 @@ Add the transformer into the specific stub via the "body-transformer" name.
     },
     "response": {
         "status": 200,
-        "body": "Original body",
+        "body": "{\"name\": \"$(var)\"}",
         "responseTransformers": ["body-transformer"]
     }
 }
 ```
 
+###Example
+For the following stub:
+```
+{
+	"request": {
+		"method": "POST",
+		"urlPath": "/transform",
+		"bodyPatterns": [
+			{
+				"matchesJsonPath": "$.name"
+			}
+		]
+	},
+	"response": {
+		"status": 200,
+		"body": "{\"responseName\": \"$(name)\"}",
+		"headers": {
+			"Content-Type": "application/json"
+		},
+		"responseTransformers": ["body-transformer"]
+	}
+}
+```
+A request body of :
+```
+{
+    "name": "Joe"
+}
+```
+would return a response body of:
+```
+{
+    "responseName": "Joe"
+}
+```
