@@ -50,6 +50,7 @@
 		<connection>scm:git:git@github.com/opentable/wiremock-body-transformer.git</connection>
 		<developerConnection>scm:git:git@github.com:opentable/wiremock-body-transformer.git</developerConnection>
 		<url>https://github.com/opentable/wiremock-body-transformer.git</url>
+		<tag>HEAD</tag>
 	</scm>
 
 	<dependencies>
