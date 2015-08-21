@@ -7,7 +7,7 @@ Built on the extensions platform of Wiremock, it allows your wiremock response t
 <dependency>
 		<groupId>com.opentable</groupId>
 		<artifactId>wiremock-body-transformer</artifactId>
-		<version>1.0.1</version>
+		<version>1.0.2</version>
 </dependency>
 ```
 
@@ -51,10 +51,11 @@ wireMock.stubFor(get(urlEqualTo("/local-transform")).willReturn(aResponse()
 
 
 ####As part of the [Wiremock standalone process](http://wiremock.org/running-standalone.html#running-standalone):
-Including the extension upon start on the command line.
+Including the extension upon start on the command line via the `--extensions` flag. Note that the BodyTransformer jar is added to the classpath.
 ```
---extensions com.opentable.extension.BodyTransformer
+java -cp "wiremock-body-transformer-1.0.2.jar:wiremock-1.57-standalone.jar" com.github.tomakehurst.wiremock.standalone.WireMockServerRunner --verbose --extensions com.opentable.extension.BodyTransformer
 ```
+
 Add the transformer into the specific stub via the "body-transformer" name.
 ```
 {
