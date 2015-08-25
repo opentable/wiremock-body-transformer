@@ -56,8 +56,15 @@ wireMock.stubFor(get(urlEqualTo("/local-transform")).willReturn(aResponse()
 [\[Download the Wiremock standalone jar here.\]](http://wiremock.org/running-standalone.html#running-standalone)
 
 Including the extension upon start on the command line via the `--extensions` flag. Note that the BodyTransformer jar is added to the classpath.
+
+For Unix:
 ```
 java -cp "wiremock-body-transformer-1.0.2.jar:wiremock-1.57-standalone.jar" com.github.tomakehurst.wiremock.standalone.WireMockServerRunner --verbose --extensions com.opentable.extension.BodyTransformer
+```
+
+For Windows:
+```
+java -cp "wiremock-body-transformer-1.0.2.jar;wiremock-1.57-standalone.jar" com.github.tomakehurst.wiremock.standalone.WireMockServerRunner --verbose --extensions com.opentable.extension.BodyTransformer
 ```
 
 Add the transformer into the specific stub via the "body-transformer" name.
