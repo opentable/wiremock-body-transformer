@@ -35,7 +35,7 @@ public class BodyTransformerTest {
 				.withStatus(200)
 				.withHeader("content-type", "application/json")
 				.withBody("{\"var\":$(var), \"got\":\"it\"}")
-				.withTransformers("body-transformer")));
+				.withTransform("body-transformer")));
 
 
 		given()
@@ -58,7 +58,7 @@ public class BodyTransformerTest {
 				.withStatus(200)
 				.withHeader("content-type", "application/json")
 				.withBody("{\"var\":$(var), \"got\":\"it\", \"nested_attr\": \"$(nested.attr)\"}")
-				.withTransformers("body-transformer")));
+				.withTransform("body-transformer")));
 
 
 		given()
@@ -82,7 +82,7 @@ public class BodyTransformerTest {
 				.withStatus(200)
 				.withHeader("content-type", "application/json")
 				.withBody("{\"var\":$(var)}")
-				.withTransformers("body-transformer")));
+				.withTransform("body-transformer")));
 
 		given()
 			.contentType("application/json")
