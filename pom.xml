@@ -18,7 +18,7 @@
 	<parent>
 		<groupId>com.opentable</groupId>
 		<artifactId>otj-parent-oss</artifactId>
-		<version>40-SNAPSHOT</version>
+		<version>39</version>
 	</parent>
 
 	<groupId>com.opentable</groupId>
