@@ -27,11 +27,7 @@
 	<packaging>jar</packaging>
 	<name>Wiremock Body Transformer</name>
 	<description>A Wiremock extension to transform the response body.</description>
-
-    <properties>
-        <project.build.targetJdk>1.7</project.build.targetJdk>
-    </properties>
-
+	
 	<developers>
 		<developer>
 			<name>Hung Tran</name>
