@@ -30,7 +30,6 @@
 
     <properties>
         <project.build.targetJdk>1.7</project.build.targetJdk>
-        <basepom.build.werror></basepom.build.werror>
     </properties>
 
 	<developers>
