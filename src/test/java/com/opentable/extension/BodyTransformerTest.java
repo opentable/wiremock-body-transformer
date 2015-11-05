@@ -21,6 +21,7 @@ import org.junit.Test;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static com.jayway.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.isA;
 import static org.hamcrest.Matchers.equalTo;
 
 public class BodyTransformerTest {
@@ -112,6 +113,29 @@ public class BodyTransformerTest {
 		.then()
 			.statusCode(200)
 			.body(equalTo("{\"var\":$(var)}"));
+
+		wireMockRule.verify(postRequestedFor(urlEqualTo("/get/this")));
+	}
+
+	@Test
+	public void injectRandomInteger() {
+		wireMockRule.stubFor(post(urlEqualTo("/get/this"))
+				.willReturn(aResponse()
+						.withStatus(200)
+						.withHeader("content-type", "application/json")
+						.withBody("{\"randomNumber\":$(!RandomInteger), \"got\":\"it\"}")
+						.withTransform("body-transformer")));
+
+
+		given()
+				.contentType("application/json")
+				.body("{\"var\":1111}")
+				.when()
+				.post("/get/this")
+				.then()
+				.statusCode(200)
+				.body("randomNumber", isA(Integer.class))
+				.body("got", equalTo("it"));
 
 		wireMockRule.verify(postRequestedFor(urlEqualTo("/get/this")));
 	}

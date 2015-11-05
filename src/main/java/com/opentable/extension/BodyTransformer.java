@@ -23,12 +23,14 @@ import com.github.tomakehurst.wiremock.http.ResponseDefinition;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class BodyTransformer extends ResponseTransformer {
 
-    private final Pattern pattern = Pattern.compile("\\$\\(.*?\\)");
+    private final Pattern interpolationPattern = Pattern.compile("\\$\\(.*?\\)");
+    private final Pattern randomIntegerPattern = Pattern.compile("!RandomInteger");
     private ObjectMapper mapper = new ObjectMapper();
 
     @Override
@@ -62,15 +64,24 @@ public class BodyTransformer extends ResponseTransformer {
     private String transformResponse(Map requestObject, String response) {
         String modifiedResponse = response;
 
-        Matcher matcher = pattern.matcher(response);
+        Matcher matcher = interpolationPattern.matcher(response);
         while (matcher.find())
         {
             String group = matcher.group();
-            modifiedResponse = modifiedResponse.replace(group, getValueFromRequestObject(group, requestObject));
+            modifiedResponse = modifiedResponse.replace(group, getValue(group, requestObject));
 
         }
 
         return modifiedResponse;
+    }
+
+
+    private CharSequence getValue(String group, Map requestObject) {
+        if (randomIntegerPattern.matcher(group).find()) {
+            return String.valueOf(Math.abs(new Random().nextInt()));
+        }
+
+        return getValueFromRequestObject(group, requestObject);
     }
 
     private CharSequence getValueFromRequestObject(String group, Map requestObject) {
