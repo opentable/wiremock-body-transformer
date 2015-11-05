@@ -78,7 +78,7 @@ public class BodyTransformer extends ResponseTransformer {
 
     private CharSequence getValue(String group, Map requestObject) {
         if (randomIntegerPattern.matcher(group).find()) {
-            return String.valueOf(Math.abs(new Random().nextInt()));
+            return String.valueOf(new Random().nextInt(2147483647));
         }
 
         return getValueFromRequestObject(group, requestObject);
