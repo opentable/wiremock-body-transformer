@@ -7,7 +7,7 @@ Built on the extensions platform of Wiremock, it allows your wiremock response t
 <dependency>
 		<groupId>com.opentable</groupId>
 		<artifactId>wiremock-body-transformer</artifactId>
-		<version>1.0.2</version>
+		<version>1.0.3</version>
 </dependency>
 ```
 
@@ -51,7 +51,7 @@ wireMock.stubFor(get(urlEqualTo("/local-transform")).willReturn(aResponse()
 
 
 ####As part of the [Wiremock standalone process](http://wiremock.org/running-standalone.html#running-standalone):
-[\[Download the extension jar file here.\]](https://github.com/opentable/wiremock-body-transformer/releases/download/wiremock-body-transformer-1.0.2/wiremock-body-transformer-1.0.2.jar)
+[\[Download the extension jar file here.\]](https://github.com/opentable/wiremock-body-transformer/releases/download/wiremock-body-transformer-1.0.3/wiremock-body-transformer-1.0.3.jar)
 
 [\[Download the Wiremock standalone jar here.\]](http://wiremock.org/running-standalone.html#running-standalone)
 
@@ -59,12 +59,12 @@ Including the extension upon start on the command line via the `--extensions` fl
 
 For Unix:
 ```
-java -cp "wiremock-body-transformer-1.0.2.jar:wiremock-1.57-standalone.jar" com.github.tomakehurst.wiremock.standalone.WireMockServerRunner --verbose --extensions com.opentable.extension.BodyTransformer
+java -cp "wiremock-body-transformer-1.0.3.jar:wiremock-1.57-standalone.jar" com.github.tomakehurst.wiremock.standalone.WireMockServerRunner --verbose --extensions com.opentable.extension.BodyTransformer
 ```
 
 For Windows:
 ```
-java -cp "wiremock-body-transformer-1.0.2.jar;wiremock-1.57-standalone.jar" com.github.tomakehurst.wiremock.standalone.WireMockServerRunner --verbose --extensions com.opentable.extension.BodyTransformer
+java -cp "wiremock-body-transformer-1.0.3.jar;wiremock-1.57-standalone.jar" com.github.tomakehurst.wiremock.standalone.WireMockServerRunner --verbose --extensions com.opentable.extension.BodyTransformer
 ```
 
 Add the transformer into the specific stub via the "body-transformer" name.
@@ -115,5 +115,35 @@ would return a response body of:
 ```
 {
     "responseName": "Joe"
+}
+```
+
+
+###Additional Features
+
+####Random Integer Generator
+With the pattern `$(!RandomInteger)` inside the stub response body, a random positive integer will be interpolated in that position.
+
+#####Example
+```
+{
+	"request": {
+		"method": "POST",
+		"urlPath": "/transform",
+	},
+	"response": {
+		"status": 200,
+		"body": "{\"randomInteger\": \"$(!RandomInteger)\"}",
+		"headers": {
+			"Content-Type": "application/json"
+		},
+		"responseTransformers": ["body-transformer"]
+	}
+}
+```
+The sample response body will return:
+```
+{
+    "randomInteger": 56542
 }
 ```
