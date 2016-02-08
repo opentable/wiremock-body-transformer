@@ -36,7 +36,7 @@ public class BodyTransformerTest {
 				.withStatus(200)
 				.withHeader("content-type", "application/json")
 				.withBody("{\"var\":$(var), \"got\":\"it\"}")
-				.withTransform("body-transformer")));
+				.withTransformers("body-transformer")));
 
 
 		given()
@@ -59,7 +59,7 @@ public class BodyTransformerTest {
 				.withStatus(200)
 				.withHeader("content-type", "application/json")
 				.withBody("{\"var\":$(var), \"got\":\"it\", \"nested_attr\": \"$(nested.attr)\"}")
-				.withTransform("body-transformer")));
+				.withTransformers("body-transformer")));
 
 
 		given()
@@ -83,7 +83,7 @@ public class BodyTransformerTest {
 				.withStatus(200)
 				.withHeader("content-type", "application/json")
 				.withBody("{\"var\":$(var)}")
-				.withTransform("body-transformer")));
+				.withTransformers("body-transformer")));
 
 		given()
 			.contentType("application/json")
@@ -124,7 +124,7 @@ public class BodyTransformerTest {
 						.withStatus(200)
 						.withHeader("content-type", "application/json")
 						.withBody("{\"randomNumber\":$(!RandomInteger), \"got\":\"it\"}")
-						.withTransform("body-transformer")));
+						.withTransformers("body-transformer")));
 
 
 		given()
@@ -136,6 +136,29 @@ public class BodyTransformerTest {
 				.statusCode(200)
 				.body("randomNumber", isA(Integer.class))
 				.body("got", equalTo("it"));
+
+		wireMockRule.verify(postRequestedFor(urlEqualTo("/get/this")));
+	}
+
+	@Test
+	public void withBodyFileName() throws Exception {
+		wireMockRule.stubFor(post(urlEqualTo("/get/this"))
+			.willReturn(aResponse()
+				.withStatus(200)
+				.withHeader("content-type", "application/json")
+				.withBodyFile("body.json")
+				.withTransformers("body-transformer")));
+
+
+		given()
+			.contentType("application/json")
+			.body("{\"var\":1111}")
+			.when()
+			.post("/get/this")
+			.then()
+			.statusCode(200)
+			.body("var", equalTo(1111))
+			.body("got", equalTo("it"));
 
 		wireMockRule.verify(postRequestedFor(urlEqualTo("/get/this")));
 	}

@@ -16,12 +16,14 @@ package com.opentable.extension;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
+import com.github.tomakehurst.wiremock.common.BinaryFile;
 import com.github.tomakehurst.wiremock.common.FileSource;
 import com.github.tomakehurst.wiremock.extension.ResponseTransformer;
 import com.github.tomakehurst.wiremock.http.Request;
 import com.github.tomakehurst.wiremock.http.ResponseDefinition;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Random;
 import java.util.regex.Matcher;
@@ -42,13 +44,16 @@ public class BodyTransformer extends ResponseTransformer {
             e.printStackTrace();
         }
 
-        if (responseDefinition.getBody() == null) {
-            return responseDefinition;
-        }
+		if (hasEmptyBody(responseDefinition)) {
+			return responseDefinition;
+		}
+
+		String body = getBody(responseDefinition, files);
 
         return ResponseDefinitionBuilder
                 .like(responseDefinition).but()
-                .withBody(transformResponse(object, responseDefinition.getBody()))
+				.withBodyFile(null)
+                .withBody(transformResponse(object, body))
                 .build();
     }
 
@@ -84,17 +89,31 @@ public class BodyTransformer extends ResponseTransformer {
         return getValueFromRequestObject(group, requestObject);
     }
 
-    private CharSequence getValueFromRequestObject(String group, Map requestObject) {
-        String fieldName = group.substring(2,group.length() -1);
-        String[] fieldNames = fieldName.split("\\.");
-        Object tempObject = requestObject;
-        for (int i = 0; i < fieldNames.length; i++) {
-            String field = fieldNames[i];
-            if (tempObject instanceof Map) {
-                tempObject = ((Map) tempObject).get(field);
-            }
-        }
-        return String.valueOf(tempObject);
-    }
+	private CharSequence getValueFromRequestObject(String group, Map requestObject) {
+		String fieldName = group.substring(2,group.length() -1);
+		String[] fieldNames = fieldName.split("\\.");
+		Object tempObject = requestObject;
+		for (String field : fieldNames) {
+			if (tempObject instanceof Map) {
+				tempObject = ((Map) tempObject).get(field);
+			}
+		}
+		return String.valueOf(tempObject);
+	}
+
+	private boolean hasEmptyBody(ResponseDefinition responseDefinition) {
+		return responseDefinition.getBody() == null && responseDefinition.getBodyFileName() == null;
+	}
+
+	private String getBody(ResponseDefinition responseDefinition, FileSource files) {
+		String body;
+		if (responseDefinition.getBody() != null) {
+			body = responseDefinition.getBody();
+		} else {
+			BinaryFile binaryFile = files.getBinaryFileNamed(responseDefinition.getBodyFileName());
+			body = new String(binaryFile.readContents(), StandardCharsets.UTF_8);
+		}
+		return body;
+	}
 }
 
