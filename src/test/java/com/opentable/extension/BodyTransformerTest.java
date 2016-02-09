@@ -31,17 +31,24 @@ public class BodyTransformerTest {
 
 	@Test
 	public void replaceVariableHolder() throws Exception {
+		testTopLevelField("{\"var\":1111}");
+	}
+	@Test
+	public void replaceVariableHolderForXml() throws Exception {
+		testTopLevelField("<root><var>1111</var></root>");
+	}
+
+	private void testTopLevelField(String requestBody)
+	{
 		wireMockRule.stubFor(post(urlEqualTo("/get/this"))
 			.willReturn(aResponse()
 				.withStatus(200)
 				.withHeader("content-type", "application/json")
 				.withBody("{\"var\":$(var), \"got\":\"it\"}")
 				.withTransformers("body-transformer")));
-
-
 		given()
 			.contentType("application/json")
-			.body("{\"var\":1111}")
+			.body(requestBody)
 		.when()
 			.post("/get/this")
 		.then()
@@ -54,17 +61,26 @@ public class BodyTransformerTest {
 
 	@Test
 	public void replaceNestedVariables() throws Exception {
+		final String requestBody = "{\"var\":1111, \"nested\": {\"attr\": \"found\"}}}";
+		testNestedField(requestBody);
+	}
+	@Test
+	public void replaceNestedVariablesForXml() throws Exception {
+		final String requestBody = "<root><var>1111</var><nested><attr>found</attr></nested></root>";
+		testNestedField(requestBody);
+	}
+
+	private void testNestedField(String requestBody)
+	{
 		wireMockRule.stubFor(post(urlEqualTo("/get/this"))
 			.willReturn(aResponse()
 				.withStatus(200)
 				.withHeader("content-type", "application/json")
 				.withBody("{\"var\":$(var), \"got\":\"it\", \"nested_attr\": \"$(nested.attr)\"}")
 				.withTransformers("body-transformer")));
-
-
 		given()
 			.contentType("application/json")
-			.body("{\"var\":1111, \"nested\": {\"attr\": \"found\"}}}")
+			.body(requestBody)
 		.when()
 			.post("/get/this")
 		.then()

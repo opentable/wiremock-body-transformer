@@ -27,7 +27,7 @@
 	<packaging>jar</packaging>
 	<name>Wiremock Body Transformer</name>
 	<description>A Wiremock extension to transform the response body.</description>
-	
+
 	<developers>
 		<developer>
 			<name>Hung Tran</name>
@@ -73,6 +73,10 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-xml</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.hamcrest</groupId>

@@ -15,6 +15,7 @@
 package com.opentable.extension;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.common.BinaryFile;
 import com.github.tomakehurst.wiremock.common.FileSource;
@@ -33,15 +34,23 @@ public class BodyTransformer extends ResponseTransformer {
 
     private final Pattern interpolationPattern = Pattern.compile("\\$\\(.*?\\)");
     private final Pattern randomIntegerPattern = Pattern.compile("!RandomInteger");
-    private ObjectMapper mapper = new ObjectMapper();
+    private ObjectMapper jsonMapper = new ObjectMapper();
+    private ObjectMapper xmlMapper = new XmlMapper();
 
     @Override
     public ResponseDefinition transform(Request request, ResponseDefinition responseDefinition, FileSource files) {
         Map object = null;
         try {
-            object = mapper.readValue(request.getBodyAsString(), Map.class);
+            object = jsonMapper.readValue(request.getBodyAsString(), Map.class);
         } catch (IOException e) {
-            e.printStackTrace();
+            try
+            {
+                object = xmlMapper.readValue(request.getBodyAsString(), Map.class);
+            }
+            catch (IOException ex)
+            {
+                ex.printStackTrace();
+            }
         }
 
 		if (hasEmptyBody(responseDefinition)) {
