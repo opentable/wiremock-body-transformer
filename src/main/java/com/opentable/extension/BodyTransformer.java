@@ -53,15 +53,15 @@ public class BodyTransformer extends ResponseTransformer {
             }
         }
 
-		if (hasEmptyBody(responseDefinition)) {
-			return responseDefinition;
-		}
+        if (hasEmptyBody(responseDefinition)) {
+            return responseDefinition;
+        }
 
-		String body = getBody(responseDefinition, files);
+        String body = getBody(responseDefinition, files);
 
         return ResponseDefinitionBuilder
                 .like(responseDefinition).but()
-				.withBodyFile(null)
+                .withBodyFile(null)
                 .withBody(transformResponse(object, body))
                 .build();
     }
@@ -98,31 +98,31 @@ public class BodyTransformer extends ResponseTransformer {
         return getValueFromRequestObject(group, requestObject);
     }
 
-	private CharSequence getValueFromRequestObject(String group, Map requestObject) {
-		String fieldName = group.substring(2,group.length() -1);
-		String[] fieldNames = fieldName.split("\\.");
-		Object tempObject = requestObject;
-		for (String field : fieldNames) {
-			if (tempObject instanceof Map) {
-				tempObject = ((Map) tempObject).get(field);
-			}
-		}
-		return String.valueOf(tempObject);
-	}
+    private CharSequence getValueFromRequestObject(String group, Map requestObject) {
+        String fieldName = group.substring(2,group.length() -1);
+        String[] fieldNames = fieldName.split("\\.");
+        Object tempObject = requestObject;
+        for (String field : fieldNames) {
+            if (tempObject instanceof Map) {
+                tempObject = ((Map) tempObject).get(field);
+            }
+        }
+        return String.valueOf(tempObject);
+    }
 
-	private boolean hasEmptyBody(ResponseDefinition responseDefinition) {
-		return responseDefinition.getBody() == null && responseDefinition.getBodyFileName() == null;
-	}
+    private boolean hasEmptyBody(ResponseDefinition responseDefinition) {
+        return responseDefinition.getBody() == null && responseDefinition.getBodyFileName() == null;
+    }
 
-	private String getBody(ResponseDefinition responseDefinition, FileSource files) {
-		String body;
-		if (responseDefinition.getBody() != null) {
-			body = responseDefinition.getBody();
-		} else {
-			BinaryFile binaryFile = files.getBinaryFileNamed(responseDefinition.getBodyFileName());
-			body = new String(binaryFile.readContents(), StandardCharsets.UTF_8);
-		}
-		return body;
-	}
+    private String getBody(ResponseDefinition responseDefinition, FileSource files) {
+        String body;
+        if (responseDefinition.getBody() != null) {
+            body = responseDefinition.getBody();
+        } else {
+            BinaryFile binaryFile = files.getBinaryFileNamed(responseDefinition.getBodyFileName());
+            body = new String(binaryFile.readContents(), StandardCharsets.UTF_8);
+        }
+        return body;
+    }
 }
 
