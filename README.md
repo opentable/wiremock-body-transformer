@@ -68,7 +68,7 @@ wireMockRule.stubFor(post(urlEqualTo("/get/this"))
 ```
 
 ####As part of the [Wiremock standalone process](http://wiremock.org/running-standalone.html#running-standalone):
-[\[Download the extension jar file here.\]](https://github.com/opentable/wiremock-body-transformer/releases/download/wiremock-body-transformer-1.0.7/wiremock-body-transformer-1.0.7.jar)
+[\[Download the body transformer extension jar file here.\]](https://github.com/opentable/wiremock-body-transformer/releases/download/wiremock-body-transformer-1.0.7/wiremock-body-transformer-1.0.7.jar)
 
 [\[Download the Wiremock standalone jar here.\]](http://wiremock.org/running-standalone.html#running-standalone)
 
