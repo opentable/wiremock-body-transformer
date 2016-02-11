@@ -57,6 +57,15 @@ wireMock.stubFor(get(urlEqualTo("/local-transform")).willReturn(aResponse()
         .withTransformers("body-transformer")));
 ```
 
+Using file to specify body response. This will read the specified file and return the content as json body.
+```
+wireMockRule.stubFor(post(urlEqualTo("/get/this"))
+	.willReturn(aResponse()
+		.withStatus(200)
+		.withHeader("content-type", "application/json")
+		.withBodyFile("body.json")
+		.withTransformers("body-transformer")));
+```
 
 ####As part of the [Wiremock standalone process](http://wiremock.org/running-standalone.html#running-standalone):
 [\[Download the extension jar file here.\]](https://github.com/opentable/wiremock-body-transformer/releases/download/wiremock-body-transformer-1.0.7/wiremock-body-transformer-1.0.7.jar)
