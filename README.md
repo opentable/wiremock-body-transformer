@@ -7,7 +7,7 @@ Built on the extensions platform of Wiremock, it allows your wiremock response t
 <dependency>
 		<groupId>com.opentable</groupId>
 		<artifactId>wiremock-body-transformer</artifactId>
-		<version>1.0.4</version>
+		<version>1.0.7</version>
 </dependency>
 ```
 
@@ -51,7 +51,7 @@ wireMock.stubFor(get(urlEqualTo("/local-transform")).willReturn(aResponse()
 
 
 ####As part of the [Wiremock standalone process](http://wiremock.org/running-standalone.html#running-standalone):
-[\[Download the extension jar file here.\]](https://github.com/opentable/wiremock-body-transformer/releases/download/wiremock-body-transformer-1.0.4/wiremock-body-transformer-1.0.4.jar)
+[\[Download the extension jar file here.\]](https://github.com/opentable/wiremock-body-transformer/releases/download/wiremock-body-transformer-1.0.7/wiremock-body-transformer-1.0.7.jar)
 
 [\[Download the Wiremock standalone jar here.\]](http://wiremock.org/running-standalone.html#running-standalone)
 
