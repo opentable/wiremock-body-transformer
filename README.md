@@ -12,12 +12,17 @@ Built on the extensions platform of Wiremock, it allows your wiremock response t
 ```
 
 ###How It Works
-The response body stub acts as a template where the variables come from the request JSON object similar to string interpolation.
-The variable fields are injected via the `$(foo)` notation, where 'foo' is a json field in the request body, as in:
+The body transformer supports both __JSON__ and __XML__ formats.
+
+The response body stub acts as a template where the variables come from the request json/xml body similar to string interpolation.
+The variable fields are injected via the `$(foo)` notation, where 'foo' is a json field in the request body.
 ```
 {
     "foo": "bar"
 }
+```
+```
+<foo>bar</foo>
 ```
 
 ###Nested Fields
@@ -29,6 +34,9 @@ For example:
 		"bar": "opentable"
 	}
 }
+```
+```
+<foo><bar>opentable</bar></foo>
 ```
 The attribute `opentable` is referenced via `$(foo.bar)` in your response body.
 
