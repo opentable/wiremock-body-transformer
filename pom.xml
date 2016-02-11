@@ -23,7 +23,7 @@
 
 	<groupId>com.opentable</groupId>
 	<artifactId>wiremock-body-transformer</artifactId>
-	<version>1.0.7</version>
+	<version>1.0.8-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>Wiremock Body Transformer</name>
 	<description>A Wiremock extension to transform the response body.</description>
@@ -49,7 +49,7 @@
 		<connection>scm:git:git@github.com/opentable/wiremock-body-transformer.git</connection>
 		<developerConnection>scm:git:git@github.com:opentable/wiremock-body-transformer.git</developerConnection>
 		<url>https://github.com/opentable/wiremock-body-transformer.git</url>
-		<tag>wiremock-body-transformer-1.0.7</tag>
+		<tag>HEAD</tag>
 	</scm>
 
 	<dependencies>
