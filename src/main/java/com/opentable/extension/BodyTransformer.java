@@ -53,7 +53,7 @@ public class BodyTransformer extends ResponseTransformer {
             }
         }
 
-		if (hasEmptyBody(responseDefinition)) {
+        if (hasEmptyBody(responseDefinition)) {
 			return responseDefinition;
 		}
 
