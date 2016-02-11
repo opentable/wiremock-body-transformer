@@ -67,12 +67,12 @@ Including the extension upon start on the command line via the `--extensions` fl
 
 For Unix:
 ```
-java -cp "wiremock-body-transformer-1.0.4.jar:wiremock-1.57-standalone.jar" com.github.tomakehurst.wiremock.standalone.WireMockServerRunner --verbose --extensions com.opentable.extension.BodyTransformer
+java -cp "wiremock-body-transformer-1.0.7.jar:wiremock-1.57-standalone.jar" com.github.tomakehurst.wiremock.standalone.WireMockServerRunner --verbose --extensions com.opentable.extension.BodyTransformer
 ```
 
 For Windows:
 ```
-java -cp "wiremock-body-transformer-1.0.4.jar;wiremock-1.57-standalone.jar" com.github.tomakehurst.wiremock.standalone.WireMockServerRunner --verbose --extensions com.opentable.extension.BodyTransformer
+java -cp "wiremock-body-transformer-1.0.7.jar;wiremock-1.57-standalone.jar" com.github.tomakehurst.wiremock.standalone.WireMockServerRunner --verbose --extensions com.opentable.extension.BodyTransformer
 ```
 
 Add the transformer into the specific stub via the "body-transformer" name.
