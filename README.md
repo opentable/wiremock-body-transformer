@@ -23,7 +23,7 @@ The variable fields are injected via the `$(foo)` notation, where 'foo' is a jso
 ```
 
 XML elements might have additional attributes and can be reached by using property name `$(foo.type)` and `$(foo.value)`.
-Keep in mind that the root element (in this case <root></root>) doesn't present in the resulting map.
+Keep in mind that the root element (in this case `<root></root>`) doesn't present in the resulting map.
 ```
 <root><foo type="string">bar</foo></root>
 ```
