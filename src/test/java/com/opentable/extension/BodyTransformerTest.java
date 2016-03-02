@@ -92,6 +92,36 @@ public class BodyTransformerTest {
 		wireMockRule.verify(postRequestedFor(urlEqualTo("/get/this")));
 	}
 
+    @Test
+    public void replaceElementAttributesForXml() throws Exception {
+        final String requestBody = "<root><var type=\"number\">1111</var><nested><attr type=\"string\">found</attr></nested></root>";
+        testXMLFieldAttributes(requestBody);
+    }
+
+    private void testXMLFieldAttributes(String requestBody) {
+        wireMockRule.stubFor(post(urlEqualTo("/get/this"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("content-type", "application/json")
+                .withBody("{\"var_type\": \"$(var.type)\", \"var_value\": $(var.value), " +
+                        "\"nested_attr_type\":\"$(nested.attr.type)\", \"nested_attr_value\":\"$(nested.attr.value)\"}")
+                .withTransformers("body-transformer")));
+
+        given()
+            .contentType("application/json")
+            .body(requestBody)
+        .when()
+            .post("/get/this")
+        .then()
+            .statusCode(200)
+            .body("var_type", equalTo("number"))
+            .body("var_value", equalTo(1111))
+            .body("nested_attr_type", equalTo("string"))
+            .body("nested_attr_value", equalTo("found"));
+
+        wireMockRule.verify(postRequestedFor(urlEqualTo("/get/this")));
+    }
+
 	@Test
 	public void nullVariableNotFound() throws Exception {
 		wireMockRule.stubFor(post(urlEqualTo("/get/this"))
@@ -142,16 +172,15 @@ public class BodyTransformerTest {
 						.withBody("{\"randomNumber\":$(!RandomInteger), \"got\":\"it\"}")
 						.withTransformers("body-transformer")));
 
-
 		given()
-				.contentType("application/json")
-				.body("{\"var\":1111}")
-				.when()
-				.post("/get/this")
-				.then()
-				.statusCode(200)
-				.body("randomNumber", isA(Integer.class))
-				.body("got", equalTo("it"));
+            .contentType("application/json")
+            .body("{\"var\":1111}")
+        .when()
+            .post("/get/this")
+        .then()
+            .statusCode(200)
+            .body("randomNumber", isA(Integer.class))
+            .body("got", equalTo("it"));
 
 		wireMockRule.verify(postRequestedFor(urlEqualTo("/get/this")));
 	}
@@ -165,13 +194,12 @@ public class BodyTransformerTest {
 				.withBodyFile("body.json")
 				.withTransformers("body-transformer")));
 
-
 		given()
 			.contentType("application/json")
 			.body("{\"var\":1111}")
-			.when()
+        .when()
 			.post("/get/this")
-			.then()
+        .then()
 			.statusCode(200)
 			.body("var", equalTo(1111))
 			.body("got", equalTo("it"));
