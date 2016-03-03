@@ -46,10 +46,10 @@ public class BodyTransformer extends ResponseTransformer {
         } catch (IOException e) {
             try
             {
-				JacksonXmlModule configuration = new JacksonXmlModule();
-				//Set the default value name for xml elements like <user type="String">Dmytro</user>
-				configuration.setXMLTextElementName("value");
-				xmlMapper = new XmlMapper(configuration);
+                JacksonXmlModule configuration = new JacksonXmlModule();
+                //Set the default value name for xml elements like <user type="String">Dmytro</user>
+                configuration.setXMLTextElementName("value");
+                xmlMapper = new XmlMapper(configuration);
                 object = xmlMapper.readValue(request.getBodyAsString(), Map.class);
             }
             catch (IOException ex)
