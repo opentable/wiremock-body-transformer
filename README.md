@@ -21,8 +21,11 @@ The variable fields are injected via the `$(foo)` notation, where 'foo' is a jso
     "foo": "bar"
 }
 ```
+
+XML elements might have additional attributes and can be reached by using property name `$(foo.type)` and `$(foo.value)`.
+Keep in mind that the root element (in this case `<root></root>`) doesn't present in the resulting map.
 ```
-<foo>bar</foo>
+<root><foo type="string">bar</foo></root>
 ```
 
 ###Nested Fields
@@ -35,10 +38,12 @@ For example:
 	}
 }
 ```
+The value `opentable` is referenced via `$(foo.bar)` in your response body.
+
 ```
-<foo><bar>opentable</bar></foo>
+<root><foo><bar type="string">opentable</bar></foo></root>
 ```
-The attribute `opentable` is referenced via `$(foo.bar)` in your response body.
+The value `opentable` is referenced via `$(foo.bar.value)` and type 'string' via `$(foo.bar.type)` in your response body.
 
 
 ###Usage
@@ -94,7 +99,7 @@ Add the transformer into the specific stub via the "body-transformer" name.
     "response": {
         "status": 200,
         "body": "{\"name\": \"$(var)\"}",
-        "responseTransformers": ["body-transformer"]
+        "transformers": ["body-transformer"]
     }
 }
 ```
@@ -118,7 +123,7 @@ For the following stub:
 		"headers": {
 			"Content-Type": "application/json"
 		},
-		"responseTransformers": ["body-transformer"]
+		"transformers": ["body-transformer"]
 	}
 }
 ```
@@ -154,7 +159,7 @@ With the pattern `$(!RandomInteger)` inside the stub response body, a random pos
 		"headers": {
 			"Content-Type": "application/json"
 		},
-		"responseTransformers": ["body-transformer"]
+		"transformers": ["body-transformer"]
 	}
 }
 ```
