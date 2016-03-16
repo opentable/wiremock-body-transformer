@@ -70,6 +70,32 @@ public class BodyTransformerTest {
 		testNestedField(requestBody);
 	}
 
+    @Test
+    public void replaceVariableHolderFromKeyValueRequest() throws Exception {
+        final String requestBody = "utf8=%E2%9C%93&auth_cv_result=M&req_locale=en-us&decision_case_priority=3";
+        testKeyValueBodyRequest(requestBody);
+    }
+
+    private void testKeyValueBodyRequest(String body) {
+        wireMockRule.stubFor(post(urlEqualTo("/get/this"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("content-type", "application/json")
+                .withBody("{\"auth_cv_result\":\"$(auth_cv_result)\"}")
+                .withTransformers("body-transformer")));
+        given()
+            .contentType("application/x-www-form-urlencoded")
+            .body(body)
+        .when()
+            .post("/get/this")
+        .then()
+            .statusCode(200)
+            .body("auth_cv_result", equalTo("M"));
+
+        wireMockRule.verify(postRequestedFor(urlEqualTo("/get/this")));
+
+    }
+
 	private void testNestedField(String requestBody)
 	{
 		wireMockRule.stubFor(post(urlEqualTo("/get/this"))

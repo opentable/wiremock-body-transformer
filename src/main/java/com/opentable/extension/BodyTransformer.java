@@ -23,9 +23,11 @@ import com.github.tomakehurst.wiremock.common.FileSource;
 import com.github.tomakehurst.wiremock.extension.ResponseTransformer;
 import com.github.tomakehurst.wiremock.http.Request;
 import com.github.tomakehurst.wiremock.http.ResponseDefinition;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.regex.Matcher;
@@ -54,7 +56,20 @@ public class BodyTransformer extends ResponseTransformer {
             }
             catch (IOException ex)
             {
-                ex.printStackTrace();
+                //Validate is a body has the 'name=value' parameters
+                String body = request.getBodyAsString();
+                if(StringUtils.isNotEmpty(body) && (body.contains("&") || body.contains("=")))
+                {
+                    object = new HashMap();
+                    String [] pairedValues = request.getBodyAsString().split("&");
+                    for(String pair: pairedValues)
+                    {
+                        String[] values = pair.split("=");
+                        object.put(values[0], values[1]);
+                    }
+                } else {
+                    System.err.println("[Body parse error] The body doesn't match any of 3 possible formats (JSON, XML, key=value).");
+                }
             }
         }
 
