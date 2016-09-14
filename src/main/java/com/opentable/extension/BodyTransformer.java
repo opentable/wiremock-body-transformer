@@ -127,4 +127,3 @@ public class BodyTransformer extends ResponseDefinitionTransformer {
         return "body-transformer";
     }
 }
-
