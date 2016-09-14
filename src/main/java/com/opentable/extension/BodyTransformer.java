@@ -20,7 +20,8 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.common.BinaryFile;
 import com.github.tomakehurst.wiremock.common.FileSource;
-import com.github.tomakehurst.wiremock.extension.ResponseTransformer;
+import com.github.tomakehurst.wiremock.extension.Parameters;
+import com.github.tomakehurst.wiremock.extension.ResponseDefinitionTransformer;
 import com.github.tomakehurst.wiremock.http.Request;
 import com.github.tomakehurst.wiremock.http.ResponseDefinition;
 
@@ -31,49 +32,12 @@ import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class BodyTransformer extends ResponseTransformer {
+public class BodyTransformer extends ResponseDefinitionTransformer {
 
     private final Pattern interpolationPattern = Pattern.compile("\\$\\(.*?\\)");
     private final Pattern randomIntegerPattern = Pattern.compile("!RandomInteger");
     private ObjectMapper jsonMapper = new ObjectMapper();
     private ObjectMapper xmlMapper;
-
-    @Override
-    public ResponseDefinition transform(Request request, ResponseDefinition responseDefinition, FileSource files) {
-        Map object = null;
-        try {
-            object = jsonMapper.readValue(request.getBodyAsString(), Map.class);
-        } catch (IOException e) {
-            try
-            {
-                JacksonXmlModule configuration = new JacksonXmlModule();
-                //Set the default value name for xml elements like <user type="String">Dmytro</user>
-                configuration.setXMLTextElementName("value");
-                xmlMapper = new XmlMapper(configuration);
-                object = xmlMapper.readValue(request.getBodyAsString(), Map.class);
-            }
-            catch (IOException ex)
-            {
-                ex.printStackTrace();
-            }
-        }
-
-        if (hasEmptyBody(responseDefinition)) {
-            return responseDefinition;
-        }
-
-        String body = getBody(responseDefinition, files);
-
-        return ResponseDefinitionBuilder
-                .like(responseDefinition).but()
-                .withBodyFile(null)
-                .withBody(transformResponse(object, body))
-                .build();
-    }
-
-    public String name() {
-        return "body-transformer";
-    }
 
     @Override
     public boolean applyGlobally() {
@@ -119,15 +83,52 @@ public class BodyTransformer extends ResponseTransformer {
         return responseDefinition.getBody() == null && responseDefinition.getBodyFileName() == null;
     }
 
-    private String getBody(ResponseDefinition responseDefinition, FileSource files) {
+    private String getBody(ResponseDefinition responseDefinition, FileSource fileSource) {
         String body;
         if (responseDefinition.getBody() != null) {
             body = responseDefinition.getBody();
         } else {
-            BinaryFile binaryFile = files.getBinaryFileNamed(responseDefinition.getBodyFileName());
+            BinaryFile binaryFile = fileSource.getBinaryFileNamed(responseDefinition.getBodyFileName());
             body = new String(binaryFile.readContents(), StandardCharsets.UTF_8);
         }
         return body;
     }
+
+	@Override
+	public ResponseDefinition transform(Request request, ResponseDefinition responseDefinition, FileSource fileSource, Parameters parameters) {
+        Map object = null;
+        try {
+            object = jsonMapper.readValue(request.getBodyAsString(), Map.class);
+        } catch (IOException e) {
+            try
+            {
+                JacksonXmlModule configuration = new JacksonXmlModule();
+                //Set the default value name for xml elements like <user type="String">Dmytro</user>
+                configuration.setXMLTextElementName("value");
+                xmlMapper = new XmlMapper(configuration);
+                object = xmlMapper.readValue(request.getBodyAsString(), Map.class);
+            }
+            catch (IOException ex)
+            {
+                ex.printStackTrace();
+            }
+        }
+
+        if (hasEmptyBody(responseDefinition)) {
+            return responseDefinition;
+        }
+
+        String body = getBody(responseDefinition, fileSource);
+
+        return ResponseDefinitionBuilder
+                .like(responseDefinition).but()
+                .withBodyFile(null)
+                .withBody(transformResponse(object, body))
+                .build();
+	}
+
+	public String getName() {
+		return "body-transformer";
+	}
 }
 
