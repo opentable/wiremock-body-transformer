@@ -48,8 +48,7 @@ public class BodyTransformer extends ResponseDefinitionTransformer {
         String modifiedResponse = response;
 
         Matcher matcher = interpolationPattern.matcher(response);
-        while (matcher.find())
-        {
+        while (matcher.find()) {
             String group = matcher.group();
             modifiedResponse = modifiedResponse.replace(group, getValue(group, requestObject));
 
@@ -68,7 +67,7 @@ public class BodyTransformer extends ResponseDefinitionTransformer {
     }
 
     private CharSequence getValueFromRequestObject(String group, Map requestObject) {
-        String fieldName = group.substring(2,group.length() -1);
+        String fieldName = group.substring(2, group.length() - 1);
         String[] fieldNames = fieldName.split("\\.");
         Object tempObject = requestObject;
         for (String field : fieldNames) {
@@ -94,22 +93,19 @@ public class BodyTransformer extends ResponseDefinitionTransformer {
         return body;
     }
 
-	@Override
-	public ResponseDefinition transform(Request request, ResponseDefinition responseDefinition, FileSource fileSource, Parameters parameters) {
+    @Override
+    public ResponseDefinition transform(Request request, ResponseDefinition responseDefinition, FileSource fileSource, Parameters parameters) {
         Map object = null;
         try {
             object = jsonMapper.readValue(request.getBodyAsString(), Map.class);
         } catch (IOException e) {
-            try
-            {
+            try {
                 JacksonXmlModule configuration = new JacksonXmlModule();
                 //Set the default value name for xml elements like <user type="String">Dmytro</user>
                 configuration.setXMLTextElementName("value");
                 xmlMapper = new XmlMapper(configuration);
                 object = xmlMapper.readValue(request.getBodyAsString(), Map.class);
-            }
-            catch (IOException ex)
-            {
+            } catch (IOException ex) {
                 ex.printStackTrace();
             }
         }
@@ -125,10 +121,10 @@ public class BodyTransformer extends ResponseDefinitionTransformer {
                 .withBodyFile(null)
                 .withBody(transformResponse(object, body))
                 .build();
-	}
+    }
 
-	public String getName() {
-		return "body-transformer";
-	}
+    public String getName() {
+        return "body-transformer";
+    }
 }
 
