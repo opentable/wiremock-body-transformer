@@ -27,6 +27,7 @@ import com.github.tomakehurst.wiremock.http.ResponseDefinition;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.regex.Matcher;
@@ -96,17 +97,47 @@ public class BodyTransformer extends ResponseDefinitionTransformer {
     @Override
     public ResponseDefinition transform(Request request, ResponseDefinition responseDefinition, FileSource fileSource, Parameters parameters) {
         Map object = null;
-        try {
-            object = jsonMapper.readValue(request.getBodyAsString(), Map.class);
-        } catch (IOException e) {
+        String requestBody = request.getBodyAsString();
+
+        if (requestBody!= null && !requestBody.isEmpty()) {
             try {
-                JacksonXmlModule configuration = new JacksonXmlModule();
-                //Set the default value name for xml elements like <user type="String">Dmytro</user>
-                configuration.setXMLTextElementName("value");
-                xmlMapper = new XmlMapper(configuration);
-                object = xmlMapper.readValue(request.getBodyAsString(), Map.class);
-            } catch (IOException ex) {
-                ex.printStackTrace();
+                object = jsonMapper.readValue(requestBody, Map.class);
+            } catch (IOException e) {
+                try {
+                    JacksonXmlModule configuration = new JacksonXmlModule();
+                    //Set the default value name for xml elements like <user type="String">Dmytro</user>
+                    configuration.setXMLTextElementName("value");
+                    xmlMapper = new XmlMapper(configuration);
+                    object = xmlMapper.readValue(requestBody, Map.class);
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+
+        // Update the map with query parameters if any
+        if (parameters != null) {
+            String urlRegex = parameters.getString("urlRegex");
+            String groupNamesStr = parameters.getString("groupNames");
+
+            if (urlRegex != null && groupNamesStr != null) {
+                Pattern p = Pattern.compile(urlRegex);
+                Matcher m = p.matcher(request.getUrl());
+
+                String[] groupNames = groupNamesStr.split(",");
+
+                if (m.matches() && m.groupCount() == groupNames.length) {
+
+                    for (int i = 0; i < groupNames.length; i++) {
+
+                        if (object == null) {
+                            object = new HashMap();
+                        }
+
+                        object.put(groupNames[i], m.group(i + 1));
+                    }
+
+                }
             }
         }
 

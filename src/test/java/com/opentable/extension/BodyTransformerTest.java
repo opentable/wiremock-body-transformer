@@ -18,10 +18,7 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.junit.Rule;
 import org.junit.Test;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.post;
-import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
@@ -209,4 +206,32 @@ public class BodyTransformerTest {
 
         wireMockRule.verify(postRequestedFor(urlEqualTo("/get/this")));
     }
+
+
+	@Test
+	public void testGetWithParameters()
+	{
+		wireMockRule.stubFor(get(urlMatching("/params/slash1/[0-9]+?/slash2/[0-9]+?.*"))
+			.willReturn(aResponse()
+				.withStatus(200)
+				.withHeader("content-type", "application/json")
+				.withBody("{\"slash1\":\"$(slash1Var)\", \"slash2\":\"$(slash2Var)\", \"one\":\"$(oneVar)\", \"two\":\"$(twoVar)\", \"three\":\"$(threeVar)\"}")
+				.withTransformers("body-transformer")
+			.withTransformerParameter("urlRegex", "/params/slash1/(.*?)/slash2/(.*?)\\?one=(.*?)\\&two=(.*?)\\&three=(.*?)")
+			.withTransformerParameter("groupNames", "slash1Var,slash2Var,oneVar,twoVar,threeVar")));
+		given()
+			.contentType("application/json")
+			.when()
+			.get("/params/slash1/10/slash2/20?one=value1&two=value2&three=value3")
+			.then()
+			.statusCode(200)
+			.body("slash1", equalTo("10"))
+			.body("slash2", equalTo("20"))
+			.body("one", equalTo("value1"))
+			.body("two", equalTo("value2"))
+			.body("three", equalTo("value3"));
+
+		wireMockRule.verify(getRequestedFor(urlMatching("/params/slash1/[0-9]+?/slash2/[0-9]+?.*")));
+	}
+
 }
