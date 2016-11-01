@@ -65,7 +65,7 @@ public class BodyTransformer extends ResponseTransformer {
                     for(String pair: pairedValues)
                     {
                         String[] values = pair.split("=");
-                        object.put(values[0], values[1]);
+                        object.put(values[0], values.length > 1 ? values[1] : "");
                     }
                 } else {
                     System.err.println("[Body parse error] The body doesn't match any of 3 possible formats (JSON, XML, key=value).");
