@@ -24,7 +24,7 @@ import com.github.tomakehurst.wiremock.extension.Parameters;
 import com.github.tomakehurst.wiremock.extension.ResponseDefinitionTransformer;
 import com.github.tomakehurst.wiremock.http.Request;
 import com.github.tomakehurst.wiremock.http.ResponseDefinition;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -40,56 +40,6 @@ public class BodyTransformer extends ResponseDefinitionTransformer {
     private final Pattern randomIntegerPattern = Pattern.compile("!RandomInteger");
     private ObjectMapper jsonMapper = new ObjectMapper();
     private ObjectMapper xmlMapper;
-
-    @Override
-    public ResponseDefinition transform(Request request, ResponseDefinition responseDefinition, FileSource files) {
-        Map object = null;
-        try {
-            object = jsonMapper.readValue(request.getBodyAsString(), Map.class);
-        } catch (IOException e) {
-            try
-            {
-				JacksonXmlModule configuration = new JacksonXmlModule();
-				//Set the default value name for xml elements like <user type="String">Dmytro</user>
-				configuration.setXMLTextElementName("value");
-				xmlMapper = new XmlMapper(configuration);
-                object = xmlMapper.readValue(request.getBodyAsString(), Map.class);
-            }
-            catch (IOException ex)
-            {
-                //Validate is a body has the 'name=value' parameters
-                String body = request.getBodyAsString();
-                if(StringUtils.isNotEmpty(body) && (body.contains("&") || body.contains("=")))
-                {
-                    object = new HashMap();
-                    String [] pairedValues = request.getBodyAsString().split("&");
-                    for(String pair: pairedValues)
-                    {
-                        String[] values = pair.split("=");
-                        object.put(values[0], values.length > 1 ? values[1] : "");
-                    }
-                } else {
-                    System.err.println("[Body parse error] The body doesn't match any of 3 possible formats (JSON, XML, key=value).");
-                }
-            }
-        }
-
-        if (hasEmptyBody(responseDefinition)) {
-            return responseDefinition;
-        }
-
-        String body = getBody(responseDefinition, files);
-
-        return ResponseDefinitionBuilder
-                .like(responseDefinition).but()
-                .withBodyFile(null)
-                .withBody(transformResponse(object, body))
-                .build();
-    }
-
-    public String name() {
-        return "body-transformer";
-    }
 
     @Override
     public boolean applyGlobally() {
@@ -144,5 +94,56 @@ public class BodyTransformer extends ResponseDefinitionTransformer {
         }
         return body;
     }
+
+	@Override
+	public ResponseDefinition transform(Request request, ResponseDefinition responseDefinition, FileSource fileSource, Parameters parameters) {
+		Map object = null;
+		try {
+			object = jsonMapper.readValue(request.getBodyAsString(), Map.class);
+		} catch (IOException e) {
+			try
+			{
+				JacksonXmlModule configuration = new JacksonXmlModule();
+				//Set the default value name for xml elements like <user type="String">Dmytro</user>
+				configuration.setXMLTextElementName("value");
+				xmlMapper = new XmlMapper(configuration);
+				object = xmlMapper.readValue(request.getBodyAsString(), Map.class);
+			}
+			catch (IOException ex)
+			{
+				//Validate is a body has the 'name=value' parameters
+				String body = request.getBodyAsString();
+				if(StringUtils.isNotEmpty(body) && (body.contains("&") || body.contains("=")))
+				{
+					object = new HashMap();
+					String [] pairedValues = request.getBodyAsString().split("&");
+					for(String pair: pairedValues)
+					{
+						String[] values = pair.split("=");
+						object.put(values[0], values.length > 1 ? values[1] : "");
+					}
+				} else {
+					System.err.println("[Body parse error] The body doesn't match any of 3 possible formats (JSON, XML, key=value).");
+				}
+			}
+		}
+
+		if (hasEmptyBody(responseDefinition)) {
+			return responseDefinition;
+		}
+
+		String body = getBody(responseDefinition, fileSource);
+
+		return ResponseDefinitionBuilder
+			.like(responseDefinition).but()
+			.withBodyFile(null)
+			.withBody(transformResponse(object, body))
+			.build();
+	}
+
+	@Override
+	public String getName() {
+		return "body-transformer";
+	}
 }
 
