@@ -32,9 +32,9 @@ Form fields value can be UTF-8 encoded, empty or not empty.
 ````
 utf8=%E2%9C%93&foo=bar&emptyFoo=&encodedFoo=Encoded+Foo+Value
 ````
-`$(foo)` will return `bar`
-`$(emptyFoo)` will return empty string
-`$(encodedFoo)` will return `Encoded Foo Value`
+`$(foo)` will return `bar`,
+`$(emptyFoo)` will return empty string,
+`$(encodedFoo)` will return `Encoded Foo Value`.
 
 ###Nested Fields
 You can specify nested fields via dot notations.
