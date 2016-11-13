@@ -77,12 +77,11 @@ public class BodyTransformerTest {
     public void replaceVariableHolderFromKeyValueRequest() throws Exception {
         final String requestBody = "utf8=%E2%9C%93&auth_cv_result=M&req_locale=en-us&decision_case_priority=3";
         testKeyValueBodyRequest(requestBody);
-
     }
 
 	@Test
 	public void replaceVariableHolderFromKeyRequest() throws Exception {
-		final String requestBody = "EmptyKey=";
+		final String requestBody = "EmptyKey=&NotEmptyKey=Not+Empty+Val";
 		testKeyBodyRequest(requestBody);
 	}
 
@@ -103,14 +102,14 @@ public class BodyTransformerTest {
             .body("auth_cv_result", equalTo("M"));
 
         wireMockRule.verify(postRequestedFor(urlEqualTo("/get/this")));
-
     }
+
 	private void testKeyBodyRequest(String body) {
 		wireMockRule.stubFor(post(urlEqualTo("/get/this"))
 			.willReturn(aResponse()
 				.withStatus(200)
 				.withHeader("content-type", "application/json")
-				.withBody("{\"EmptyKey\":\"\"}")
+				.withBody("{\"EmptyKey\":\"$(EmptyKey)\", \"NotEmptyKey\" : \"$(NotEmptyKey)\"}")
 				.withTransformers("body-transformer")));
 		given()
 			.contentType("application/x-www-form-urlencoded")
@@ -119,10 +118,10 @@ public class BodyTransformerTest {
 			.post("/get/this")
 		.then()
 			.statusCode(200)
-			.body("EmptyKey", equalTo(""));
+			.body("EmptyKey", equalTo(""))
+			.body("NotEmptyKey", equalTo("Not Empty Val"));
 
 		wireMockRule.verify(postRequestedFor(urlEqualTo("/get/this")));
-
 	}
 
 	private void testNestedField(String requestBody)

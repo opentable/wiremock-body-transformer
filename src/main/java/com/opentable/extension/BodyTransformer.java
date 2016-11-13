@@ -27,6 +27,8 @@ import com.github.tomakehurst.wiremock.http.ResponseDefinition;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -120,7 +122,7 @@ public class BodyTransformer extends ResponseDefinitionTransformer {
 					for(String pair: pairedValues)
 					{
 						String[] values = pair.split("=");
-						object.put(values[0], values.length > 1 ? values[1] : "");
+						object.put(values[0], values.length > 1 ? decodeUTF8Value(values[1]) : "");
 					}
 				} else {
 					System.err.println("[Body parse error] The body doesn't match any of 3 possible formats (JSON, XML, key=value).");
@@ -141,6 +143,17 @@ public class BodyTransformer extends ResponseDefinitionTransformer {
 			.build();
 	}
 
+	private String decodeUTF8Value(String value) {
+
+		String decodedValue = "";
+		try {
+			decodedValue = URLDecoder.decode(value, StandardCharsets.UTF_8.name());
+		} catch (UnsupportedEncodingException e) {
+			System.err.println("[Body parse error] Can't decode one of the request parameter. It should be UTF-8 charset.");
+		}
+
+		return decodedValue;
+	}
 	@Override
 	public String getName() {
 		return "body-transformer";
