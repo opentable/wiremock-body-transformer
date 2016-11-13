@@ -73,24 +73,76 @@ public class BodyTransformerTest {
         testNestedField(requestBody);
     }
 
-    private void testNestedField(String requestBody)
-    {
+    @Test
+    public void replaceVariableHolderFromKeyValueRequest() throws Exception {
+        final String requestBody = "utf8=%E2%9C%93&auth_cv_result=M&req_locale=en-us&decision_case_priority=3";
+        testKeyValueBodyRequest(requestBody);
+
+    }
+
+	@Test
+	public void replaceVariableHolderFromKeyRequest() throws Exception {
+		final String requestBody = "EmptyKey=";
+		testKeyBodyRequest(requestBody);
+	}
+
+    private void testKeyValueBodyRequest(String body) {
         wireMockRule.stubFor(post(urlEqualTo("/get/this"))
             .willReturn(aResponse()
                 .withStatus(200)
                 .withHeader("content-type", "application/json")
-                .withBody("{\"var\":$(var), \"got\":\"it\", \"nested_attr\": \"$(nested.attr)\"}")
+                .withBody("{\"auth_cv_result\":\"$(auth_cv_result)\"}")
                 .withTransformers("body-transformer")));
         given()
-            .contentType("application/json")
-            .body(requestBody)
+            .contentType("application/x-www-form-urlencoded")
+            .body(body)
         .when()
             .post("/get/this")
         .then()
             .statusCode(200)
-            .body("var", equalTo(1111))
-            .body("got", equalTo("it"))
-            .body("nested_attr", equalTo("found"));
+            .body("auth_cv_result", equalTo("M"));
+
+        wireMockRule.verify(postRequestedFor(urlEqualTo("/get/this")));
+
+    }
+	private void testKeyBodyRequest(String body) {
+		wireMockRule.stubFor(post(urlEqualTo("/get/this"))
+			.willReturn(aResponse()
+				.withStatus(200)
+				.withHeader("content-type", "application/json")
+				.withBody("{\"EmptyKey\":\"\"}")
+				.withTransformers("body-transformer")));
+		given()
+			.contentType("application/x-www-form-urlencoded")
+			.body(body)
+		.when()
+			.post("/get/this")
+		.then()
+			.statusCode(200)
+			.body("EmptyKey", equalTo(""));
+
+		wireMockRule.verify(postRequestedFor(urlEqualTo("/get/this")));
+
+	}
+
+	private void testNestedField(String requestBody)
+	{
+		wireMockRule.stubFor(post(urlEqualTo("/get/this"))
+			.willReturn(aResponse()
+				.withStatus(200)
+				.withHeader("content-type", "application/json")
+				.withBody("{\"var\":$(var), \"got\":\"it\", \"nested_attr\": \"$(nested.attr)\"}")
+				.withTransformers("body-transformer")));
+		given()
+			.contentType("application/json")
+			.body(requestBody)
+		.when()
+			.post("/get/this")
+		.then()
+			.statusCode(200)
+			.body("var", equalTo(1111))
+			.body("got", equalTo("it"))
+			.body("nested_attr", equalTo("found"));
 
         wireMockRule.verify(postRequestedFor(urlEqualTo("/get/this")));
     }
