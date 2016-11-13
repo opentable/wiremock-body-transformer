@@ -100,8 +100,10 @@ public class BodyTransformer extends ResponseDefinitionTransformer {
 	@Override
 	public ResponseDefinition transform(Request request, ResponseDefinition responseDefinition, FileSource fileSource, Parameters parameters) {
 		Map object = null;
+		String requestBody = request.getBodyAsString();
+
 		try {
-			object = jsonMapper.readValue(request.getBodyAsString(), Map.class);
+			object = jsonMapper.readValue(requestBody, Map.class);
 		} catch (IOException e) {
 			try
 			{
@@ -109,16 +111,15 @@ public class BodyTransformer extends ResponseDefinitionTransformer {
 				//Set the default value name for xml elements like <user type="String">Dmytro</user>
 				configuration.setXMLTextElementName("value");
 				xmlMapper = new XmlMapper(configuration);
-				object = xmlMapper.readValue(request.getBodyAsString(), Map.class);
+				object = xmlMapper.readValue(requestBody, Map.class);
 			}
 			catch (IOException ex)
 			{
 				//Validate is a body has the 'name=value' parameters
-				String body = request.getBodyAsString();
-				if(StringUtils.isNotEmpty(body) && (body.contains("&") || body.contains("=")))
+				if(StringUtils.isNotEmpty(requestBody) && (requestBody.contains("&") || requestBody.contains("=")))
 				{
 					object = new HashMap();
-					String [] pairedValues = request.getBodyAsString().split("&");
+					String [] pairedValues = requestBody.split("&");
 					for(String pair: pairedValues)
 					{
 						String[] values = pair.split("=");
