@@ -20,7 +20,8 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.common.BinaryFile;
 import com.github.tomakehurst.wiremock.common.FileSource;
-import com.github.tomakehurst.wiremock.extension.ResponseTransformer;
+import com.github.tomakehurst.wiremock.extension.Parameters;
+import com.github.tomakehurst.wiremock.extension.ResponseDefinitionTransformer;
 import com.github.tomakehurst.wiremock.http.Request;
 import com.github.tomakehurst.wiremock.http.ResponseDefinition;
 import org.apache.commons.lang.StringUtils;
@@ -33,7 +34,7 @@ import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class BodyTransformer extends ResponseTransformer {
+public class BodyTransformer extends ResponseDefinitionTransformer {
 
     private final Pattern interpolationPattern = Pattern.compile("\\$\\(.*?\\)");
     private final Pattern randomIntegerPattern = Pattern.compile("!RandomInteger");
@@ -99,8 +100,7 @@ public class BodyTransformer extends ResponseTransformer {
         String modifiedResponse = response;
 
         Matcher matcher = interpolationPattern.matcher(response);
-        while (matcher.find())
-        {
+        while (matcher.find()) {
             String group = matcher.group();
             modifiedResponse = modifiedResponse.replace(group, getValue(group, requestObject));
 
@@ -119,7 +119,7 @@ public class BodyTransformer extends ResponseTransformer {
     }
 
     private CharSequence getValueFromRequestObject(String group, Map requestObject) {
-        String fieldName = group.substring(2,group.length() -1);
+        String fieldName = group.substring(2, group.length() - 1);
         String[] fieldNames = fieldName.split("\\.");
         Object tempObject = requestObject;
         for (String field : fieldNames) {
@@ -134,12 +134,12 @@ public class BodyTransformer extends ResponseTransformer {
         return responseDefinition.getBody() == null && responseDefinition.getBodyFileName() == null;
     }
 
-    private String getBody(ResponseDefinition responseDefinition, FileSource files) {
+    private String getBody(ResponseDefinition responseDefinition, FileSource fileSource) {
         String body;
         if (responseDefinition.getBody() != null) {
             body = responseDefinition.getBody();
         } else {
-            BinaryFile binaryFile = files.getBinaryFileNamed(responseDefinition.getBodyFileName());
+            BinaryFile binaryFile = fileSource.getBinaryFileNamed(responseDefinition.getBodyFileName());
             body = new String(binaryFile.readContents(), StandardCharsets.UTF_8);
         }
         return body;
