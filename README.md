@@ -7,7 +7,7 @@ Built on the extensions platform of Wiremock, it allows your wiremock response t
 <dependency>
 		<groupId>com.opentable</groupId>
 		<artifactId>wiremock-body-transformer</artifactId>
-		<version>1.1.1</version>
+		<version>1.1.2</version>
 </dependency>
 ```
 
@@ -81,7 +81,7 @@ wireMockRule.stubFor(post(urlEqualTo("/get/this"))
 ```
 
 ####As part of the [Wiremock standalone process](http://wiremock.org/running-standalone.html#running-standalone):
-[\[Download the body transformer extension jar file here.\]](https://github.com/opentable/wiremock-body-transformer/releases/download/wiremock-body-transformer-1.1.1/wiremock-body-transformer-1.1.1.jar)
+[\[Download the body transformer extension jar file here.\]](https://github.com/opentable/wiremock-body-transformer/releases/download/wiremock-body-transformer-1.1.2/wiremock-body-transformer-1.1.2.jar)
 
 [\[Download the Wiremock standalone jar here.\]](http://repo1.maven.org/maven2/com/github/tomakehurst/wiremock-standalone/2.1.12/wiremock-standalone-2.1.12.jar)
 
@@ -89,12 +89,12 @@ Including the extension upon start on the command line via the `--extensions` fl
 
 For Unix:
 ```
-java -cp "wiremock-body-transformer-1.1.1.jar:wiremock-1.57-standalone.jar" com.github.tomakehurst.wiremock.standalone.WireMockServerRunner --verbose --extensions com.opentable.extension.BodyTransformer
+java -cp "wiremock-body-transformer-1.1.2.jar:wiremock-2.1.1-standalone.jar" com.github.tomakehurst.wiremock.standalone.WireMockServerRunner --verbose --extensions com.opentable.extension.BodyTransformer
 ```
 
 For Windows:
 ```
-java -cp "wiremock-body-transformer-1.1.1.jar;wiremock-1.57-standalone.jar" com.github.tomakehurst.wiremock.standalone.WireMockServerRunner --verbose --extensions com.opentable.extension.BodyTransformer
+java -cp "wiremock-body-transformer-1.1.2.jar;wiremock-2.1.1-standalone.jar" com.github.tomakehurst.wiremock.standalone.WireMockServerRunner --verbose --extensions com.opentable.extension.BodyTransformer
 ```
 
 Add the transformer into the specific stub via the "body-transformer" name.
