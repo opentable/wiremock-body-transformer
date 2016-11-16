@@ -12,9 +12,9 @@ Built on the extensions platform of Wiremock, it allows your wiremock response t
 ```
 
 ###How It Works
-The body transformer supports both __JSON__ and __XML__ formats.
+The body transformer supports __JSON__, __XML__ and __x-www-form-urlencoded__ formats.
 
-The response body stub acts as a template where the variables come from the request json/xml body similar to string interpolation.
+The response body stub acts as a template where the variables come from the request json/xml/form body similar to string interpolation.
 The variable fields are injected via the `$(foo)` notation, where 'foo' is a json field in the request body.
 ```
 {
@@ -27,6 +27,14 @@ Keep in mind that the root element (in this case `<root></root>`) doesn't presen
 ```
 <root><foo type="string">bar</foo></root>
 ```
+
+Form fields value can be UTF-8 encoded, empty or not empty. 
+````
+utf8=%E2%9C%93&foo=bar&emptyFoo=&encodedFoo=Encoded+Foo+Value
+````
+`$(foo)` will return `bar`,
+`$(emptyFoo)` will return empty string,
+`$(encodedFoo)` will return `Encoded Foo Value`.
 
 ###Nested Fields
 You can specify nested fields via dot notations.
