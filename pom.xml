@@ -57,13 +57,7 @@
 		<dependency>
 			<groupId>com.github.tomakehurst</groupId>
 			<artifactId>wiremock</artifactId>
-			<version>2.1.11</version>
-			<exclusions>
-				<exclusion>
-					<groupId>net.minidev</groupId>
-					<artifactId>asm</artifactId>
-				</exclusion>
-			</exclusions>
+			<version>2.3.1</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
