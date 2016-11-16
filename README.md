@@ -7,7 +7,7 @@ Built on the extensions platform of Wiremock, it allows your wiremock response t
 <dependency>
 		<groupId>com.opentable</groupId>
 		<artifactId>wiremock-body-transformer</artifactId>
-		<version>1.1.2</version>
+		<version>1.1.3</version>
 </dependency>
 ```
 
