@@ -97,67 +97,63 @@ public class BodyTransformer extends ResponseDefinitionTransformer {
         return body;
     }
 
-	@Override
-	public ResponseDefinition transform(Request request, ResponseDefinition responseDefinition, FileSource fileSource, Parameters parameters) {
-		Map object = null;
-		String requestBody = request.getBodyAsString();
+    @Override
+    public ResponseDefinition transform(Request request, ResponseDefinition responseDefinition, FileSource fileSource, Parameters parameters) {
+        Map object = null;
+        String requestBody = request.getBodyAsString();
 
-		try {
-			object = jsonMapper.readValue(requestBody, Map.class);
-		} catch (IOException e) {
-			try
-			{
-				JacksonXmlModule configuration = new JacksonXmlModule();
-				//Set the default value name for xml elements like <user type="String">Dmytro</user>
-				configuration.setXMLTextElementName("value");
-				xmlMapper = new XmlMapper(configuration);
-				object = xmlMapper.readValue(requestBody, Map.class);
-			}
-			catch (IOException ex)
-			{
-				//Validate is a body has the 'name=value' parameters
-				if(StringUtils.isNotEmpty(requestBody) && (requestBody.contains("&") || requestBody.contains("=")))
-				{
-					object = new HashMap();
-					String [] pairedValues = requestBody.split("&");
-					for(String pair: pairedValues)
-					{
-						String[] values = pair.split("=");
-						object.put(values[0], values.length > 1 ? decodeUTF8Value(values[1]) : "");
-					}
-				} else {
-					System.err.println("[Body parse error] The body doesn't match any of 3 possible formats (JSON, XML, key=value).");
-				}
-			}
-		}
+        try {
+            object = jsonMapper.readValue(requestBody, Map.class);
+        } catch (IOException e) {
+            try {
+                JacksonXmlModule configuration = new JacksonXmlModule();
+                //Set the default value name for xml elements like <user type="String">Dmytro</user>
+                configuration.setXMLTextElementName("value");
+                xmlMapper = new XmlMapper(configuration);
+                object = xmlMapper.readValue(requestBody, Map.class);
+            } catch (IOException ex) {
+                //Validate is a body has the 'name=value' parameters
+                if (StringUtils.isNotEmpty(requestBody) && (requestBody.contains("&") || requestBody.contains("="))) {
+                    object = new HashMap();
+                    String[] pairedValues = requestBody.split("&");
+                    for (String pair : pairedValues) {
+                        String[] values = pair.split("=");
+                        object.put(values[0], values.length > 1 ? decodeUTF8Value(values[1]) : "");
+                    }
+                } else {
+                    System.err.println("[Body parse error] The body doesn't match any of 3 possible formats (JSON, XML, key=value).");
+                }
+            }
+        }
 
-		if (hasEmptyBody(responseDefinition)) {
-			return responseDefinition;
-		}
+        if (hasEmptyBody(responseDefinition)) {
+            return responseDefinition;
+        }
 
-		String body = getBody(responseDefinition, fileSource);
+        String body = getBody(responseDefinition, fileSource);
 
-		return ResponseDefinitionBuilder
-			.like(responseDefinition).but()
-			.withBodyFile(null)
-			.withBody(transformResponse(object, body))
-			.build();
-	}
+        return ResponseDefinitionBuilder
+                .like(responseDefinition).but()
+                .withBodyFile(null)
+                .withBody(transformResponse(object, body))
+                .build();
+    }
 
-	private String decodeUTF8Value(String value) {
+    private String decodeUTF8Value(String value) {
 
-		String decodedValue = "";
-		try {
-			decodedValue = URLDecoder.decode(value, StandardCharsets.UTF_8.name());
-		} catch (UnsupportedEncodingException e) {
-			System.err.println("[Body parse error] Can't decode one of the request parameter. It should be UTF-8 charset.");
-		}
+        String decodedValue = "";
+        try {
+            decodedValue = URLDecoder.decode(value, StandardCharsets.UTF_8.name());
+        } catch (UnsupportedEncodingException e) {
+            System.err.println("[Body parse error] Can't decode one of the request parameter. It should be UTF-8 charset.");
+        }
 
-		return decodedValue;
-	}
-	@Override
-	public String getName() {
-		return "body-transformer";
-	}
+        return decodedValue;
+    }
+
+    @Override
+    public String getName() {
+        return "body-transformer";
+    }
 }
 
