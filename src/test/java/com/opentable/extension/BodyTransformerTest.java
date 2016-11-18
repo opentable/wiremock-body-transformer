@@ -20,7 +20,9 @@ import org.junit.Test;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static com.jayway.restassured.RestAssured.given;
@@ -32,6 +34,26 @@ public class BodyTransformerTest {
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().port(8080).extensions(new BodyTransformer()));
 
+    @Test
+    public void testKeyValueAsQueryString() {
+        wireMockRule.stubFor(get(urlEqualTo("/test?foo=bar"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("content-type", "application/json")
+                        .withBody("{\"foo\": \"$(foo)\"}")
+                        .withTransformers("body-transformer")));
+        
+        given()
+            .contentType("application/json")
+            .when()
+            .get("/test?foo=bar")
+            .then()
+            .statusCode(200)
+            .body("foo", equalTo("bar"));
+        
+        wireMockRule.verify(getRequestedFor(urlEqualTo("/test?foo=bar")));
+    }
+    
     @Test
     public void replaceVariableHolder() throws Exception {
         testTopLevelField("{\"var\":1111}");
