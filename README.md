@@ -12,7 +12,7 @@ Built on the extensions platform of Wiremock, it allows your wiremock response t
 ```
 
 ###How It Works
-The body transformer supports __JSON__, __XML__ and __x-www-form-urlencoded__ formats.
+The body transformer supports __JSON__, __XML__, __x-www-form-urlencoded__ and __query string__ formats.
 
 The response body stub acts as a template where the variables come from the request json/xml/form body similar to string interpolation.
 The variable fields are injected via the `$(foo)` notation, where 'foo' is a json field in the request body.
