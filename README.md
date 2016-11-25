@@ -36,6 +36,31 @@ utf8=%E2%9C%93&foo=bar&emptyFoo=&encodedFoo=Encoded+Foo+Value
 `$(emptyFoo)` will return empty string,
 `$(encodedFoo)` will return `Encoded Foo Value`.
 
+Query string parameters can be used simply by passing them at end of URL.
+
+````
+myurl.com?foo=bar&baz=bak
+````
+
+To get parameters values in this example, simply put their names in stub or a file that will be returned with the default notation as showed below.
+
+```
+{
+	"msg": "This is a json response file",
+	"param1": "$(foo)",
+	"param2": "$(bar)"
+}
+```
+
+This response will be retuned as follows:
+
+```
+{
+	"msg": "This is a json response file",
+	"param1": bar,
+	"param2": bak
+}
+```
 ###Nested Fields
 You can specify nested fields via dot notations.
 For example:
@@ -147,7 +172,6 @@ would return a response body of:
     "responseName": "Joe"
 }
 ```
-
 
 ###Additional Features
 
