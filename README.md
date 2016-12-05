@@ -12,7 +12,7 @@ Built on the extensions platform of Wiremock, it allows your wiremock response t
 ```
 
 ###How It Works
-The body transformer supports __JSON__, __XML__ and __x-www-form-urlencoded__ formats.
+The body transformer supports __JSON__, __XML__, __x-www-form-urlencoded__ and __query string__ formats.
 
 The response body stub acts as a template where the variables come from the request json/xml/form body similar to string interpolation.
 The variable fields are injected via the `$(foo)` notation, where 'foo' is a json field in the request body.
@@ -36,6 +36,31 @@ utf8=%E2%9C%93&foo=bar&emptyFoo=&encodedFoo=Encoded+Foo+Value
 `$(emptyFoo)` will return empty string,
 `$(encodedFoo)` will return `Encoded Foo Value`.
 
+Query string parameters can be used simply by passing them at end of URL.
+
+````
+myurl.com?foo=bar&baz=bak
+````
+
+To get parameters values in this example, simply put their names in stub or a file that will be returned with the default notation as showed below.
+
+```
+{
+	"msg": "This is a json response file",
+	"param1": "$(foo)",
+	"param2": "$(bar)"
+}
+```
+
+This response will be retuned as follows:
+
+```
+{
+	"msg": "This is a json response file",
+	"param1": bar,
+	"param2": bak
+}
+```
 ###Nested Fields
 You can specify nested fields via dot notations.
 For example:
@@ -147,7 +172,6 @@ would return a response body of:
     "responseName": "Joe"
 }
 ```
-
 
 ###Additional Features
 

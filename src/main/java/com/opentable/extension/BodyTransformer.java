@@ -61,7 +61,6 @@ public class BodyTransformer extends ResponseDefinitionTransformer {
         return modifiedResponse;
     }
 
-
     private CharSequence getValue(String group, Map requestObject) {
         if (randomIntegerPattern.matcher(group).find()) {
             return String.valueOf(new Random().nextInt(2147483647));
@@ -107,15 +106,23 @@ public class BodyTransformer extends ResponseDefinitionTransformer {
         } catch (IOException e) {
             try {
                 JacksonXmlModule configuration = new JacksonXmlModule();
-                //Set the default value name for xml elements like <user type="String">Dmytro</user>
+                // Set the default value name for xml elements like <user type="String">Dmytro</user>
                 configuration.setXMLTextElementName("value");
                 xmlMapper = new XmlMapper(configuration);
                 object = xmlMapper.readValue(requestBody, Map.class);
             } catch (IOException ex) {
-                //Validate is a body has the 'name=value' parameters
+                // Validate is a body has the 'name=value' parameters
                 if (StringUtils.isNotEmpty(requestBody) && (requestBody.contains("&") || requestBody.contains("="))) {
                     object = new HashMap();
                     String[] pairedValues = requestBody.split("&");
+                    for (String pair : pairedValues) {
+                        String[] values = pair.split("=");
+                        object.put(values[0], values.length > 1 ? decodeUTF8Value(values[1]) : "");
+                    }
+                } else if (request.getAbsoluteUrl().split("\\?").length == 2 ){ // Validate query string parameters
+                    object = new HashMap();
+                    String absoluteUrl = request.getAbsoluteUrl();
+                    String[] pairedValues = absoluteUrl.split("\\?")[1].split("&");
                     for (String pair : pairedValues) {
                         String[] values = pair.split("=");
                         object.put(values[0], values.length > 1 ? decodeUTF8Value(values[1]) : "");
@@ -156,4 +163,3 @@ public class BodyTransformer extends ResponseDefinitionTransformer {
         return "body-transformer";
     }
 }
-
