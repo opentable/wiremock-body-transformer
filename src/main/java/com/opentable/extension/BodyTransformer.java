@@ -24,10 +24,15 @@ import com.github.tomakehurst.wiremock.extension.Parameters;
 import com.github.tomakehurst.wiremock.extension.ResponseDefinitionTransformer;
 import com.github.tomakehurst.wiremock.http.Request;
 import com.github.tomakehurst.wiremock.http.ResponseDefinition;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.regex.Matcher;
@@ -57,7 +62,6 @@ public class BodyTransformer extends ResponseDefinitionTransformer {
 
         return modifiedResponse;
     }
-
 
     private CharSequence getValue(String group, Map requestObject) {
         if (randomIntegerPattern.matcher(group).find()) {
@@ -99,47 +103,64 @@ public class BodyTransformer extends ResponseDefinitionTransformer {
         Map object = null;
         String requestBody = request.getBodyAsString();
 
-        if (requestBody!= null && !requestBody.isEmpty()) {
+        try {
+            object = jsonMapper.readValue(requestBody, Map.class);
+        } catch (IOException e) {
             try {
-                object = jsonMapper.readValue(requestBody, Map.class);
-            } catch (IOException e) {
-                try {
-                    JacksonXmlModule configuration = new JacksonXmlModule();
-                    //Set the default value name for xml elements like <user type="String">Dmytro</user>
-                    configuration.setXMLTextElementName("value");
-                    xmlMapper = new XmlMapper(configuration);
-                    object = xmlMapper.readValue(requestBody, Map.class);
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
-            }
-        }
-
-        // Update the map with query parameters if any
-        if (parameters != null) {
-            String urlRegex = parameters.getString("urlRegex");
-            String groupNamesStr = parameters.getString("groupNames");
-
-            if (urlRegex != null && groupNamesStr != null) {
-                Pattern p = Pattern.compile(urlRegex);
-                Matcher m = p.matcher(request.getUrl());
-
-                String[] groupNames = groupNamesStr.split(",");
-
-                if (m.matches() && m.groupCount() == groupNames.length) {
-
-                    for (int i = 0; i < groupNames.length; i++) {
-
-                        if (object == null) {
-                            object = new HashMap();
-                        }
-
-                        object.put(groupNames[i], m.group(i + 1));
+                JacksonXmlModule configuration = new JacksonXmlModule();
+                // Set the default value name for xml elements like <user type="String">Dmytro</user>
+                configuration.setXMLTextElementName("value");
+                xmlMapper = new XmlMapper(configuration);
+                object = xmlMapper.readValue(requestBody, Map.class);
+            } catch (IOException ex) {
+                // Validate is a body has the 'name=value' parameters
+                if (StringUtils.isNotEmpty(requestBody) && (requestBody.contains("&") || requestBody.contains("="))) {
+                    object = new HashMap();
+                    String[] pairedValues = requestBody.split("&");
+                    for (String pair : pairedValues) {
+                        String[] values = pair.split("=");
+                        object.put(values[0], values.length > 1 ? decodeUTF8Value(values[1]) : "");
                     }
-
+                } else if (request.getAbsoluteUrl().split("\\?").length == 2 ){ // Validate query string parameters
+                    object = new HashMap();
+                    String absoluteUrl = request.getAbsoluteUrl();
+                    String[] pairedValues = absoluteUrl.split("\\?")[1].split("&");
+                    for (String pair : pairedValues) {
+                        String[] values = pair.split("=");
+                        object.put(values[0], values.length > 1 ? decodeUTF8Value(values[1]) : "");
+                    }
+                } else {
+                    System.err.println("[Body parse error] The body doesn't match any of 3 possible formats (JSON, XML, key=value).");
                 }
             }
         }
+
+		// Update the map with query parameters if any
+		if (parameters != null) {
+			String urlRegex = parameters.getString("urlRegex");
+
+			if (urlRegex != null) {
+				Pattern p = Pattern.compile(urlRegex);
+				Matcher m = p.matcher(request.getUrl());
+
+				// There may be more groups in the regex than the number of named capturing groups
+				List<String> groups = getNamedGroupCandidates(urlRegex);
+
+				if (m.matches() &&
+					groups.size() > 0 &&
+					groups.size() <= m.groupCount()) {
+
+					for (int i = 0; i < groups.size(); i++) {
+
+						if (object == null) {
+							object = new HashMap();
+						}
+
+						object.put(groups.get(i), m.group(i + 1));
+					}
+				}
+			}
+		}
 
         if (hasEmptyBody(responseDefinition)) {
             return responseDefinition;
@@ -154,6 +175,31 @@ public class BodyTransformer extends ResponseDefinitionTransformer {
                 .build();
     }
 
+	private static List<String> getNamedGroupCandidates(String regex) {
+		List<String> namedGroups = new ArrayList<>();
+
+		Matcher m = Pattern.compile("\\(\\?<([a-zA-Z][a-zA-Z0-9]*?)>").matcher(regex);
+
+		while (m.find()) {
+			namedGroups.add(m.group(1));
+		}
+
+		return namedGroups;
+	}
+
+    private String decodeUTF8Value(String value) {
+
+        String decodedValue = "";
+        try {
+            decodedValue = URLDecoder.decode(value, StandardCharsets.UTF_8.name());
+        } catch (UnsupportedEncodingException e) {
+            System.err.println("[Body parse error] Can't decode one of the request parameter. It should be UTF-8 charset.");
+        }
+
+        return decodedValue;
+    }
+
+    @Override
     public String getName() {
         return "body-transformer";
     }

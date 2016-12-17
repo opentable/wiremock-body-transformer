@@ -18,13 +18,13 @@
 	<parent>
 		<groupId>com.opentable</groupId>
 		<artifactId>otj-parent-oss</artifactId>
-		<version>61</version>
+		<version>66</version>
 	</parent>
 
 
 	<groupId>com.opentable</groupId>
 	<artifactId>wiremock-body-transformer</artifactId>
-	<version>1.1.2-SNAPSHOT</version>
+	<version>1.1.5-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>Wiremock Body Transformer</name>
 	<description>A Wiremock extension to transform the response body.</description>
@@ -57,10 +57,10 @@
 		<dependency>
 			<groupId>com.github.tomakehurst</groupId>
 			<artifactId>wiremock</artifactId>
-			<version>2.1.11</version>
+			<version>2.3.1</version>
 			<exclusions>
 				<exclusion>
-					<groupId>net.minidev</groupId>
+					<groupId>org.ow2.asm</groupId>
 					<artifactId>asm</artifactId>
 				</exclusion>
 			</exclusions>
@@ -104,6 +104,12 @@
 			<artifactId>rest-assured</artifactId>
 			<version>2.4.1</version>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.4</version>
+			<scope>compile</scope>
 		</dependency>
 	</dependencies>
 

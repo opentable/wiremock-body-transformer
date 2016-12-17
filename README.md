@@ -7,14 +7,14 @@ Built on the extensions platform of Wiremock, it allows your wiremock response t
 <dependency>
 		<groupId>com.opentable</groupId>
 		<artifactId>wiremock-body-transformer</artifactId>
-		<version>1.1.1</version>
+		<version>1.1.4</version>
 </dependency>
 ```
 
 ###How It Works
-The body transformer supports both __JSON__ and __XML__ formats.
+The body transformer supports __JSON__, __XML__, __x-www-form-urlencoded__ and __query string__ formats.
 
-The response body stub acts as a template where the variables come from the request json/xml body similar to string interpolation.
+The response body stub acts as a template where the variables come from the request json/xml/form body similar to string interpolation.
 The variable fields are injected via the `$(foo)` notation, where 'foo' is a json field in the request body.
 ```
 {
@@ -28,6 +28,39 @@ Keep in mind that the root element (in this case `<root></root>`) doesn't presen
 <root><foo type="string">bar</foo></root>
 ```
 
+Form fields value can be UTF-8 encoded, empty or not empty. 
+````
+utf8=%E2%9C%93&foo=bar&emptyFoo=&encodedFoo=Encoded+Foo+Value
+````
+`$(foo)` will return `bar`,
+`$(emptyFoo)` will return empty string,
+`$(encodedFoo)` will return `Encoded Foo Value`.
+
+Query string parameters can be used simply by passing them at end of URL.
+
+````
+myurl.com?foo=bar&baz=bak
+````
+
+To get parameters values in this example, simply put their names in stub or a file that will be returned with the default notation as showed below.
+
+```
+{
+	"msg": "This is a json response file",
+	"param1": "$(foo)",
+	"param2": "$(bar)"
+}
+```
+
+This response will be retuned as follows:
+
+```
+{
+	"msg": "This is a json response file",
+	"param1": bar,
+	"param2": bak
+}
+```
 ###Nested Fields
 You can specify nested fields via dot notations.
 For example:
@@ -47,7 +80,7 @@ The value `opentable` is referenced via `$(foo.bar.value)` and type 'string' via
 
 ### URL Pattern Matching
 You can use this feature to extract query parameters or parts of the URL. Pass in additional transformer parameters to do url pattern matching. 
-Pass a regex parameter named `urlRegex` to match the url and extract relevant groups. Pass in the comma-delimited group names as a `groupNames` parameter.
+Pass a regex parameter named `urlRegex` to match the url and extract relevant groups. Use named capturing groups in your regex to pass in group names.
 
 ##### Example
 Fetching a url like: /params/slash1/10/slash2/20?one=value1&two=value2&three=value3 using the following code in Java:
@@ -58,8 +91,7 @@ Fetching a url like: /params/slash1/10/slash2/20?one=value1&two=value2&three=val
             .withHeader("content-type", "application/json")
             .withBody("{\"slash1\":\"$(slash1Var)\", \"slash2\":\"$(slash2Var)\", \"one\":\"$(oneVar)\", \"two\":\"$(twoVar)\", \"three\":\"$(threeVar)\"}")
             .withTransformers("body-transformer")
-        .withTransformerParameter("urlRegex", "/params/slash1/(.*?)/slash2/(.*?)\\?one=(.*?)\\&two=(.*?)\\&three=(.*?)")
-        .withTransformerParameter("groupNames", "slash1Var,slash2Var,oneVar,twoVar,threeVar")));
+        .withTransformerParameter("urlRegex", "/params/slash1/(?<slash1Var>.*?)/slash2/(?<slash2Var>.*?)\\?one=(?<oneVar>.*?)\\&two=(?<twoVar>.*?)\\&three=(?<threeVar>.*?)")));
 ```
 returns a body that looks like:
 ```
@@ -99,20 +131,20 @@ wireMockRule.stubFor(post(urlEqualTo("/get/this"))
 ```
 
 ####As part of the [Wiremock standalone process](http://wiremock.org/running-standalone.html#running-standalone):
-[\[Download the body transformer extension jar file here.\]](https://github.com/opentable/wiremock-body-transformer/releases/download/wiremock-body-transformer-1.1.1/wiremock-body-transformer-1.1.1.jar)
+[\[Download the body transformer extension jar file here.\]](https://github.com/opentable/wiremock-body-transformer/releases/download/wiremock-body-transformer-1.1.4/wiremock-body-transformer-1.1.4.jar)
 
-[\[Download the Wiremock standalone jar here.\]](http://repo1.maven.org/maven2/com/github/tomakehurst/wiremock-standalone/2.1.12/wiremock-standalone-2.1.12.jar)
+[\[Download the Wiremock standalone jar here.\]](http://repo1.maven.org/maven2/com/github/tomakehurst/wiremock-standalone/2.3.1/wiremock-standalone-2.3.1.jar)
 
 Including the extension upon start on the command line via the `--extensions` flag. Note that the BodyTransformer jar is added to the classpath.
 
 For Unix:
 ```
-java -cp "wiremock-body-transformer-1.1.1.jar:wiremock-1.57-standalone.jar" com.github.tomakehurst.wiremock.standalone.WireMockServerRunner --verbose --extensions com.opentable.extension.BodyTransformer
+java -cp "wiremock-body-transformer-1.1.4.jar:wiremock-2.3.1-standalone.jar" com.github.tomakehurst.wiremock.standalone.WireMockServerRunner --verbose --extensions com.opentable.extension.BodyTransformer
 ```
 
 For Windows:
 ```
-java -cp "wiremock-body-transformer-1.1.1.jar;wiremock-1.57-standalone.jar" com.github.tomakehurst.wiremock.standalone.WireMockServerRunner --verbose --extensions com.opentable.extension.BodyTransformer
+java -cp "wiremock-body-transformer-1.1.4.jar;wiremock-2.3.1-standalone.jar" com.github.tomakehurst.wiremock.standalone.WireMockServerRunner --verbose --extensions com.opentable.extension.BodyTransformer
 ```
 
 Add the transformer into the specific stub via the "body-transformer" name.
@@ -165,7 +197,6 @@ would return a response body of:
     "responseName": "Joe"
 }
 ```
-
 
 ###Additional Features
 
