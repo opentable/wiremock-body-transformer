@@ -30,7 +30,9 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.regex.Matcher;
@@ -133,6 +135,33 @@ public class BodyTransformer extends ResponseDefinitionTransformer {
             }
         }
 
+		// Update the map with query parameters if any
+		if (parameters != null) {
+			String urlRegex = parameters.getString("urlRegex");
+
+			if (urlRegex != null) {
+				Pattern p = Pattern.compile(urlRegex);
+				Matcher m = p.matcher(request.getUrl());
+
+				// There may be more groups in the regex than the number of named capturing groups
+				List<String> groups = getNamedGroupCandidates(urlRegex);
+
+				if (m.matches() &&
+					groups.size() > 0 &&
+					groups.size() <= m.groupCount()) {
+
+					for (int i = 0; i < groups.size(); i++) {
+
+						if (object == null) {
+							object = new HashMap();
+						}
+
+						object.put(groups.get(i), m.group(i + 1));
+					}
+				}
+			}
+		}
+
         if (hasEmptyBody(responseDefinition)) {
             return responseDefinition;
         }
@@ -145,6 +174,18 @@ public class BodyTransformer extends ResponseDefinitionTransformer {
                 .withBody(transformResponse(object, body))
                 .build();
     }
+
+	private static List<String> getNamedGroupCandidates(String regex) {
+		List<String> namedGroups = new ArrayList<>();
+
+		Matcher m = Pattern.compile("\\(\\?<([a-zA-Z][a-zA-Z0-9]*?)>").matcher(regex);
+
+		while (m.find()) {
+			namedGroups.add(m.group(1));
+		}
+
+		return namedGroups;
+	}
 
     private String decodeUTF8Value(String value) {
 

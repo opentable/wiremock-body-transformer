@@ -18,6 +18,7 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import org.junit.Rule;
 import org.junit.Test;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
@@ -42,7 +43,7 @@ public class BodyTransformerTest {
                         .withHeader("content-type", "application/json")
                         .withBody("{\"foo\": \"$(foo)\"}")
                         .withTransformers("body-transformer")));
-        
+
         given()
             .contentType("application/json")
             .when()
@@ -50,10 +51,10 @@ public class BodyTransformerTest {
             .then()
             .statusCode(200)
             .body("foo", equalTo("bar"));
-        
+
         wireMockRule.verify(getRequestedFor(urlEqualTo("/test?foo=bar")));
     }
-    
+
     @Test
     public void replaceVariableHolder() throws Exception {
         testTopLevelField("{\"var\":1111}");
@@ -282,4 +283,52 @@ public class BodyTransformerTest {
 
         wireMockRule.verify(postRequestedFor(urlEqualTo("/get/this")));
     }
+
+
+	@Test
+	public void testGetWithParameters()
+	{
+		wireMockRule.stubFor(get(urlMatching("/params/slash1/[0-9]+?/slash2/[0-9]+?.*"))
+			.willReturn(aResponse()
+				.withStatus(200)
+				.withHeader("content-type", "application/json")
+				.withBody("{\"slash1\":\"$(slash1Var)\", \"slash2\":\"$(slash2Var)\", \"one\":\"$(oneVar)\", \"two\":\"$(twoVar)\", \"three\":\"$(threeVar)\"}")
+				.withTransformers("body-transformer")
+				.withTransformerParameter("urlRegex", "/params/slash1/(?<slash1Var>.*?)/slash2/(?<slash2Var>.*?)\\?one=(?<oneVar>.*?)\\&two=(?<twoVar>.*?)\\&three=(?<threeVar>.*?)")));
+
+		given()
+			.contentType("application/json")
+			.when()
+			.get("/params/slash1/10/slash2/20?one=value1&two=value2&three=value3")
+			.then()
+			.statusCode(200)
+			.body("slash1", equalTo("10"))
+			.body("slash2", equalTo("20"))
+			.body("one", equalTo("value1"))
+			.body("two", equalTo("value2"))
+			.body("three", equalTo("value3"));
+
+		wireMockRule.verify(getRequestedFor(urlMatching("/params/slash1/[0-9]+?/slash2/[0-9]+?.*")));
+	}
+
+	@Test
+	public void testGetWithBadParameters()
+	{
+		wireMockRule.stubFor(get(urlMatching("/params/slash1/[0-9]+?/slash2/[0-9]+?.*"))
+			.willReturn(aResponse()
+				.withStatus(200)
+				.withHeader("content-type", "application/json")
+				.withBody("{\"slash1\":\"$(slash1Var)\", \"slash2\":\"$(slash2Var)\", \"one\":\"$(oneVar)\", \"two\":\"$(twoVar)\", \"three\":\"$(threeVar)\"}")
+				.withTransformers("body-transformer")
+				.withTransformerParameter("urlRegex", "/params/slash1/(?<>.*?)/slash2/(?<slash2Var>.*?)\\?one=(?<oneVar>.*?)\\&two=(?<twoVar>.*?)\\&three=(?<threeVar>.*?)")));
+
+		given()
+			.contentType("application/json")
+			.when()
+			.get("/params/slash1/10/slash2/20?one=value1&two=value2&three=value3")
+			.then()
+			.statusCode(500);
+
+	}
+
 }

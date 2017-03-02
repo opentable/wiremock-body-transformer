@@ -78,6 +78,31 @@ The value `opentable` is referenced via `$(foo.bar)` in your response body.
 ```
 The value `opentable` is referenced via `$(foo.bar.value)` and type 'string' via `$(foo.bar.type)` in your response body.
 
+### URL Pattern Matching
+You can use this feature to extract query parameters or parts of the URL. Pass in additional transformer parameters to do url pattern matching. 
+Pass a regex parameter named `urlRegex` to match the url and extract relevant groups. Use named capturing groups in your regex to pass in group names.
+
+##### Example
+Fetching a url like: /params/slash1/10/slash2/20?one=value1&two=value2&three=value3 using the following code in Java:
+```
+    wireMockRule.stubFor(get(urlMatching("/params/slash1/[0-9]+?/slash2/[0-9]+?.*"))
+        .willReturn(aResponse()
+            .withStatus(200)
+            .withHeader("content-type", "application/json")
+            .withBody("{\"slash1\":\"$(slash1Var)\", \"slash2\":\"$(slash2Var)\", \"one\":\"$(oneVar)\", \"two\":\"$(twoVar)\", \"three\":\"$(threeVar)\"}")
+            .withTransformers("body-transformer")
+        .withTransformerParameter("urlRegex", "/params/slash1/(?<slash1Var>.*?)/slash2/(?<slash2Var>.*?)\\?one=(?<oneVar>.*?)\\&two=(?<twoVar>.*?)\\&three=(?<threeVar>.*?)")));
+```
+returns a body that looks like:
+```
+{
+    "slash1": "10",
+    "slash2": "20",
+    "one": "value1",
+    "two": "value2",
+    "three": "value3"
+}
+```
 
 ###Usage
 
@@ -201,3 +226,4 @@ The sample response body will return:
     "randomInteger": 56542
 }
 ```
+
