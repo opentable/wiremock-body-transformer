@@ -121,7 +121,7 @@ public class BodyTransformer extends ResponseDefinitionTransformer {
                         String[] values = pair.split("=");
                         object.put(values[0], values.length > 1 ? decodeUTF8Value(values[1]) : "");
                     }
-                } else if (request.getAbsoluteUrl().split("\\?").length == 2 ){ // Validate query string parameters
+                } else if (request.getAbsoluteUrl().split("\\?").length == 2) { // Validate query string parameters
                     object = new HashMap();
                     String absoluteUrl = request.getAbsoluteUrl();
                     String[] pairedValues = absoluteUrl.split("\\?")[1].split("&");
@@ -135,32 +135,32 @@ public class BodyTransformer extends ResponseDefinitionTransformer {
             }
         }
 
-		// Update the map with query parameters if any
-		if (parameters != null) {
-			String urlRegex = parameters.getString("urlRegex");
+        // Update the map with query parameters if any
+        if (parameters != null) {
+            String urlRegex = parameters.getString("urlRegex");
 
-			if (urlRegex != null) {
-				Pattern p = Pattern.compile(urlRegex);
-				Matcher m = p.matcher(request.getUrl());
+            if (urlRegex != null) {
+                Pattern p = Pattern.compile(urlRegex);
+                Matcher m = p.matcher(request.getUrl());
 
-				// There may be more groups in the regex than the number of named capturing groups
-				List<String> groups = getNamedGroupCandidates(urlRegex);
+                // There may be more groups in the regex than the number of named capturing groups
+                List<String> groups = getNamedGroupCandidates(urlRegex);
 
-				if (m.matches() &&
-					groups.size() > 0 &&
-					groups.size() <= m.groupCount()) {
+                if (m.matches() &&
+                        groups.size() > 0 &&
+                        groups.size() <= m.groupCount()) {
 
-					for (int i = 0; i < groups.size(); i++) {
+                    for (int i = 0; i < groups.size(); i++) {
 
-						if (object == null) {
-							object = new HashMap();
-						}
+                        if (object == null) {
+                            object = new HashMap();
+                        }
 
-						object.put(groups.get(i), m.group(i + 1));
-					}
-				}
-			}
-		}
+                        object.put(groups.get(i), m.group(i + 1));
+                    }
+                }
+            }
+        }
 
         if (hasEmptyBody(responseDefinition)) {
             return responseDefinition;
@@ -175,17 +175,17 @@ public class BodyTransformer extends ResponseDefinitionTransformer {
                 .build();
     }
 
-	private static List<String> getNamedGroupCandidates(String regex) {
-		List<String> namedGroups = new ArrayList<>();
+    private static List<String> getNamedGroupCandidates(String regex) {
+        List<String> namedGroups = new ArrayList<>();
 
-		Matcher m = Pattern.compile("\\(\\?<([a-zA-Z][a-zA-Z0-9]*?)>").matcher(regex);
+        Matcher m = Pattern.compile("\\(\\?<([a-zA-Z][a-zA-Z0-9]*?)>").matcher(regex);
 
-		while (m.find()) {
-			namedGroups.add(m.group(1));
-		}
+        while (m.find()) {
+            namedGroups.add(m.group(1));
+        }
 
-		return namedGroups;
-	}
+        return namedGroups;
+    }
 
     private String decodeUTF8Value(String value) {
 
