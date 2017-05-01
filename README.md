@@ -1,8 +1,8 @@
-##Wiremock Body Transformer
+## Wiremock Body Transformer
 Wiremock Body Transformer is a [Wiremock](http://wiremock.org/) extension that can take the request body and interpolates the variable into the response.
 Built on the extensions platform of Wiremock, it allows your wiremock response to be dynamic and dependent on the request for a smarter testing process.
 
-###Installation
+### Installation
 ```
 <dependency>
 		<groupId>com.opentable</groupId>
@@ -11,7 +11,7 @@ Built on the extensions platform of Wiremock, it allows your wiremock response t
 </dependency>
 ```
 
-###How It Works
+### How It Works
 The body transformer supports __JSON__, __XML__, __x-www-form-urlencoded__ and __query string__ formats.
 
 The response body stub acts as a template where the variables come from the request json/xml/form body similar to string interpolation.
@@ -61,7 +61,7 @@ This response will be retuned as follows:
 	"param2": bak
 }
 ```
-###Nested Fields
+### Nested Fields
 You can specify nested fields via dot notations.
 For example:
 ```
@@ -104,9 +104,9 @@ returns a body that looks like:
 }
 ```
 
-###Usage
+### Usage
 
-####As part of [Unit Testing with Wiremock](http://wiremock.org/extending-wiremock.html): 
+#### As part of [Unit Testing with Wiremock](http://wiremock.org/extending-wiremock.html):
 
 Instantiating the Wiremock server with the `BodyTransformer` instance.
 ```
@@ -130,7 +130,7 @@ wireMockRule.stubFor(post(urlEqualTo("/get/this"))
 		.withTransformers("body-transformer")));
 ```
 
-####As part of the [Wiremock standalone process](http://wiremock.org/running-standalone.html#running-standalone):
+#### As part of the [Wiremock standalone process](http://wiremock.org/running-standalone.html#running-standalone):
 [\[Download the body transformer extension jar file here.\]](https://github.com/opentable/wiremock-body-transformer/releases/download/wiremock-body-transformer-1.1.5/wiremock-body-transformer-1.1.5.jar)
 
 [\[Download the Wiremock standalone jar here.\]](http://repo1.maven.org/maven2/com/github/tomakehurst/wiremock-standalone/2.3.1/wiremock-standalone-2.3.1.jar)
@@ -162,7 +162,7 @@ Add the transformer into the specific stub via the "body-transformer" name.
 }
 ```
 
-###Example
+### Example
 For the following stub:
 ```
 {
@@ -198,12 +198,12 @@ would return a response body of:
 }
 ```
 
-###Additional Features
+### Additional Features
 
-####Random Integer Generator
+#### Random Integer Generator
 With the pattern `$(!RandomInteger)` inside the stub response body, a random positive integer will be interpolated in that position.
 
-#####Example
+##### Example
 ```
 {
 	"request": {
