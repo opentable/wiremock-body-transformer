@@ -100,7 +100,11 @@ public class BodyTransformer extends ResponseDefinitionTransformer {
 
     @Override
     public ResponseDefinition transform(Request request, ResponseDefinition responseDefinition, FileSource fileSource, Parameters parameters) {
-        Map object = null;
+		if (hasEmptyBody(responseDefinition)) {
+			return responseDefinition;
+		}
+
+    	Map object = null;
         String requestBody = request.getBodyAsString();
 
         try {
@@ -160,10 +164,6 @@ public class BodyTransformer extends ResponseDefinitionTransformer {
                     }
                 }
             }
-        }
-
-        if (hasEmptyBody(responseDefinition)) {
-            return responseDefinition;
         }
 
         String body = getBody(responseDefinition, fileSource);
