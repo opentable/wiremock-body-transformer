@@ -40,10 +40,21 @@ import java.util.regex.Pattern;
 
 public class BodyTransformer extends ResponseDefinitionTransformer {
 
-    private final Pattern interpolationPattern = Pattern.compile("\\$\\(.*?\\)");
-    private final Pattern randomIntegerPattern = Pattern.compile("!RandomInteger");
-    private ObjectMapper jsonMapper = new ObjectMapper();
-    private ObjectMapper xmlMapper;
+    private static final Pattern interpolationPattern = Pattern.compile("\\$\\(.*?\\)");
+    private static final Pattern randomIntegerPattern = Pattern.compile("!RandomInteger");
+
+    private static ObjectMapper jsonMapper = initJsonMapper();
+    private static ObjectMapper xmlMapper = initXmlMapper();
+
+	private static ObjectMapper initJsonMapper() {
+    	return new ObjectMapper();
+	}
+
+	private static ObjectMapper initXmlMapper() {
+		JacksonXmlModule configuration = new JacksonXmlModule();
+		configuration.setXMLTextElementName("value");
+		return new XmlMapper(configuration);
+	}
 
     @Override
     public boolean applyGlobally() {
@@ -83,11 +94,11 @@ public class BodyTransformer extends ResponseDefinitionTransformer {
         return String.valueOf(tempObject);
     }
 
-    private boolean hasEmptyBody(ResponseDefinition responseDefinition) {
+    private boolean hasEmptyResponseBody(ResponseDefinition responseDefinition) {
         return responseDefinition.getBody() == null && responseDefinition.getBodyFileName() == null;
     }
 
-    private String getBody(ResponseDefinition responseDefinition, FileSource fileSource) {
+    private String getResponseBody(ResponseDefinition responseDefinition, FileSource fileSource) {
         String body;
         if (responseDefinition.getBody() != null) {
             body = responseDefinition.getBody();
@@ -100,17 +111,17 @@ public class BodyTransformer extends ResponseDefinitionTransformer {
 
     @Override
     public ResponseDefinition transform(Request request, ResponseDefinition responseDefinition, FileSource fileSource, Parameters parameters) {
-        Map object = null;
+		if (hasEmptyResponseBody(responseDefinition)) {
+			return responseDefinition;
+		}
+
+    	Map object = null;
         String requestBody = request.getBodyAsString();
 
         try {
             object = jsonMapper.readValue(requestBody, Map.class);
         } catch (IOException e) {
             try {
-                JacksonXmlModule configuration = new JacksonXmlModule();
-                // Set the default value name for xml elements like <user type="String">Dmytro</user>
-                configuration.setXMLTextElementName("value");
-                xmlMapper = new XmlMapper(configuration);
                 object = xmlMapper.readValue(requestBody, Map.class);
             } catch (IOException ex) {
                 // Validate is a body has the 'name=value' parameters
@@ -162,16 +173,12 @@ public class BodyTransformer extends ResponseDefinitionTransformer {
             }
         }
 
-        if (hasEmptyBody(responseDefinition)) {
-            return responseDefinition;
-        }
-
-        String body = getBody(responseDefinition, fileSource);
+        String responseBody = getResponseBody(responseDefinition, fileSource);
 
         return ResponseDefinitionBuilder
                 .like(responseDefinition).but()
                 .withBodyFile(null)
-                .withBody(transformResponse(object, body))
+                .withBody(transformResponse(object, responseBody))
                 .build();
     }
 
