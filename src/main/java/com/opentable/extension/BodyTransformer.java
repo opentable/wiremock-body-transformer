@@ -40,10 +40,21 @@ import java.util.regex.Pattern;
 
 public class BodyTransformer extends ResponseDefinitionTransformer {
 
-    private final Pattern interpolationPattern = Pattern.compile("\\$\\(.*?\\)");
-    private final Pattern randomIntegerPattern = Pattern.compile("!RandomInteger");
-    private ObjectMapper jsonMapper = new ObjectMapper();
-    private ObjectMapper xmlMapper;
+    private static final Pattern interpolationPattern = Pattern.compile("\\$\\(.*?\\)");
+    private static final Pattern randomIntegerPattern = Pattern.compile("!RandomInteger");
+
+    private static ObjectMapper jsonMapper = initJsonMapper();
+    private static ObjectMapper xmlMapper = initXmlMapper();
+
+	private static ObjectMapper initJsonMapper() {
+    	return new ObjectMapper();
+	}
+
+	private static ObjectMapper initXmlMapper() {
+		JacksonXmlModule configuration = new JacksonXmlModule();
+		configuration.setXMLTextElementName("value");
+		return new XmlMapper(configuration);
+	}
 
     @Override
     public boolean applyGlobally() {
@@ -111,10 +122,6 @@ public class BodyTransformer extends ResponseDefinitionTransformer {
             object = jsonMapper.readValue(requestBody, Map.class);
         } catch (IOException e) {
             try {
-                JacksonXmlModule configuration = new JacksonXmlModule();
-                // Set the default value name for xml elements like <user type="String">Dmytro</user>
-                configuration.setXMLTextElementName("value");
-                xmlMapper = new XmlMapper(configuration);
                 object = xmlMapper.readValue(requestBody, Map.class);
             } catch (IOException ex) {
                 // Validate is a body has the 'name=value' parameters
