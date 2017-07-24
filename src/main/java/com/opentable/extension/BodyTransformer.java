@@ -46,15 +46,15 @@ public class BodyTransformer extends ResponseDefinitionTransformer {
     private static ObjectMapper jsonMapper = initJsonMapper();
     private static ObjectMapper xmlMapper = initXmlMapper();
 
-	private static ObjectMapper initJsonMapper() {
-    	return new ObjectMapper();
-	}
+    private static ObjectMapper initJsonMapper() {
+        return new ObjectMapper();
+    }
 
-	private static ObjectMapper initXmlMapper() {
-		JacksonXmlModule configuration = new JacksonXmlModule();
-		configuration.setXMLTextElementName("value");
-		return new XmlMapper(configuration);
-	}
+    private static ObjectMapper initXmlMapper() {
+        JacksonXmlModule configuration = new JacksonXmlModule();
+        configuration.setXMLTextElementName("value");
+        return new XmlMapper(configuration);
+    }
 
     @Override
     public boolean applyGlobally() {
@@ -111,11 +111,11 @@ public class BodyTransformer extends ResponseDefinitionTransformer {
 
     @Override
     public ResponseDefinition transform(Request request, ResponseDefinition responseDefinition, FileSource fileSource, Parameters parameters) {
-		if (hasEmptyResponseBody(responseDefinition)) {
-			return responseDefinition;
-		}
+        if (hasEmptyResponseBody(responseDefinition)) {
+            return responseDefinition;
+        }
 
-    	Map object = null;
+        Map object = null;
         String requestBody = request.getBodyAsString();
 
         try {
