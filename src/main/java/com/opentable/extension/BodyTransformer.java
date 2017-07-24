@@ -94,11 +94,11 @@ public class BodyTransformer extends ResponseDefinitionTransformer {
         return String.valueOf(tempObject);
     }
 
-    private boolean hasEmptyBody(ResponseDefinition responseDefinition) {
+    private boolean hasEmptyResponseBody(ResponseDefinition responseDefinition) {
         return responseDefinition.getBody() == null && responseDefinition.getBodyFileName() == null;
     }
 
-    private String getBody(ResponseDefinition responseDefinition, FileSource fileSource) {
+    private String getResponseBody(ResponseDefinition responseDefinition, FileSource fileSource) {
         String body;
         if (responseDefinition.getBody() != null) {
             body = responseDefinition.getBody();
@@ -111,7 +111,7 @@ public class BodyTransformer extends ResponseDefinitionTransformer {
 
     @Override
     public ResponseDefinition transform(Request request, ResponseDefinition responseDefinition, FileSource fileSource, Parameters parameters) {
-		if (hasEmptyBody(responseDefinition)) {
+		if (hasEmptyResponseBody(responseDefinition)) {
 			return responseDefinition;
 		}
 
@@ -173,12 +173,12 @@ public class BodyTransformer extends ResponseDefinitionTransformer {
             }
         }
 
-        String body = getBody(responseDefinition, fileSource);
+        String responseBody = getResponseBody(responseDefinition, fileSource);
 
         return ResponseDefinitionBuilder
                 .like(responseDefinition).but()
                 .withBodyFile(null)
-                .withBody(transformResponse(object, body))
+                .withBody(transformResponse(object, responseBody))
                 .build();
     }
 
