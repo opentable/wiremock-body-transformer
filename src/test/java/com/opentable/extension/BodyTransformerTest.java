@@ -331,26 +331,23 @@ public class BodyTransformerTest {
     
     @Test
     public void urlRegexParameterWillReplaceFieldFromJsonBodyWithSameName() {
-        String FIELD_NAME = "paramVar";
-        String PARAM_VALUE = "10";
-        String BODY_VALUE = "11";
-        
         wireMockRule.stubFor(post(urlMatching("/param/[0-9]+?"))
             .willReturn(aResponse()
                 .withStatus(200)
                 .withHeader("content-type", "application/json")
-                .withBody(String.format("{\"returnedField\":\"$(%s)\"}", FIELD_NAME))
+                .withBody("{\"var\":\"$(var)\",\"got\":\"it\"}")
                 .withTransformers("body-transformer")
-                .withTransformerParameter("urlRegex", String.format("/param/(?<%s>.*?)", FIELD_NAME))));
+                .withTransformerParameter("urlRegex", "/param/(?<var>.*?)")));
         
         given()
             .contentType("application/json")
-            .body(String.format("{\"%s\":\"%s\"}", FIELD_NAME, BODY_VALUE))
+            .body("{\"var\":\"11\"}")
             .when()
-            .post(String.format("/param/%s", PARAM_VALUE))
+            .post("/param/10")
             .then()
             .statusCode(200)
-            .body(equalTo(String.format("{\"returnedField\":\"%s\"}", PARAM_VALUE)));
+            .body("var", equalTo("10"))
+            .body("got", equalTo("it"));
     }
     
     @Test
@@ -359,17 +356,17 @@ public class BodyTransformerTest {
             .willReturn(aResponse()
                 .withStatus(200)
                 .withHeader("content-type", "application/json")
-                .withBody(String.format("{\"returnedField\":\"$(value)\"}"))
+                .withBody("{\"returnedField\":\"$(value)\"}")
                 .withTransformers("body-transformer")
-                .withTransformerParameter("urlRegex", String.format("/param/(?<%s>.*?)", "value"))));
+                .withTransformerParameter("urlRegex", "/param/(?<value>.*?)")));
     
         given()
             .contentType("application/json")
-            .body(String.format("<test>11</test>"))
-            .post(String.format("/param/10"))
+            .body("<test>11</test>")
+            .post("/param/10")
             .then()
             .statusCode(200)
-            .body(equalTo(String.format("{\"returnedField\":\"%s\"}", 10)));
+            .body("returnedField", equalTo("10"));
     }
     
     @Test
@@ -384,11 +381,11 @@ public class BodyTransformerTest {
         
         given()
             .contentType("application/x-www-form-urlencoded")
-            .body("var=10&got=it")
-            .post("/param/11")
+            .body("var=11&got=it")
+            .post("/param/10")
             .then()
             .statusCode(200)
-            .body("var", equalTo("11"))
+            .body("var", equalTo("10"))
             .body("got", equalTo("it"));
     }
     
