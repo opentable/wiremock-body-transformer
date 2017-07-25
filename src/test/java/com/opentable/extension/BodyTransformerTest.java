@@ -332,26 +332,26 @@ public class BodyTransformerTest {
     
     @Test
     public void urlRegexParameterWillReplaceFieldFromJsonBodyWithSameName() {
-        String PARAM_NAME = "param1Var";
+        String FIELD_NAME = "paramVar";
         String PARAM_VALUE = "10";
         String BODY_VALUE = "11";
         
-        wireMockRule.stubFor(post(urlMatching("/params/param1/[0-9]+?"))
+        wireMockRule.stubFor(post(urlMatching("/param/[0-9]+?"))
             .willReturn(aResponse()
                 .withStatus(200)
                 .withHeader("content-type", "application/json")
-                .withBody(String.format("{\"param1\":\"$(%s)\"}", PARAM_NAME))
+                .withBody(String.format("{\"returnedField\":\"$(%s)\"}", FIELD_NAME))
                 .withTransformers("body-transformer")
-                .withTransformerParameter("urlRegex", String.format("/params/param1/(?<%s>.*?)", PARAM_NAME))));
+                .withTransformerParameter("urlRegex", String.format("/param/(?<%s>.*?)", FIELD_NAME))));
         
         given()
             .contentType("application/json")
-            .body(String.format("{\"%s\":\"%s\"}", PARAM_NAME, BODY_VALUE))
+            .body(String.format("{\"%s\":\"%s\"}", FIELD_NAME, BODY_VALUE))
             .when()
-            .post(String.format("/params/param1/%s", PARAM_VALUE))
+            .post(String.format("/param/%s", PARAM_VALUE))
             .then()
             .statusCode(200)
-            .body(equalTo(String.format("{\"param1\":\"%s\"}", PARAM_VALUE)));
+            .body(equalTo(String.format("{\"returnedField\":\"%s\"}", PARAM_VALUE)));
     }
 
 	@Test
