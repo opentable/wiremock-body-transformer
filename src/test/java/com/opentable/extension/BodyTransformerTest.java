@@ -372,8 +372,27 @@ public class BodyTransformerTest {
             .body(equalTo(String.format("{\"returnedField\":\"%s\"}", 10)));
     }
     
+    @Test
+    public void urlRegexParameterWillReplaceFieldFromKeyValueBodyRequestWithSameName() {
+        wireMockRule.stubFor(post(urlMatching("/param/[0-9]+?"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("content-type", "application/json")
+                .withBody("{\"var\":\"$(var)\",\"got\":\"it\"}")
+                .withTransformers("body-transformer")
+                .withTransformerParameter("urlRegex", "/param/(?<var>.*?)")));
+        
+        given()
+            .contentType("application/x-www-form-urlencoded")
+            .body("var=10&got=it")
+            .post("/param/11")
+            .then()
+            .statusCode(200)
+            .body("var", equalTo("11"))
+            .body("got", equalTo("it"));
+    }
+    
     //TODO: Test for xml with only root field
-    //TODO: Test for key/value
     //TODO: Test for key=value,key=value for parameters
     
 	@Test
