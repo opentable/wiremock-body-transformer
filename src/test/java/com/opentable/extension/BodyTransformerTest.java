@@ -327,7 +327,6 @@ public class BodyTransformerTest {
 			.get("/params/slash1/10/slash2/20?one=value1&two=value2&three=value3")
 			.then()
 			.statusCode(500);
-
 	}
     
     @Test
@@ -353,7 +352,30 @@ public class BodyTransformerTest {
             .statusCode(200)
             .body(equalTo(String.format("{\"returnedField\":\"%s\"}", PARAM_VALUE)));
     }
-
+    
+    @Test
+    public void urlRegexParameterWithNameValueWillReplaceRootFieldFromXmlBodyWhenOnlyRootField() {
+        wireMockRule.stubFor(post(urlMatching("/param/[0-9]+?"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("content-type", "application/json")
+                .withBody(String.format("{\"returnedField\":\"$(value)\"}"))
+                .withTransformers("body-transformer")
+                .withTransformerParameter("urlRegex", String.format("/param/(?<%s>.*?)", "value"))));
+    
+        given()
+            .contentType("application/json")
+            .body(String.format("<test>11</test>"))
+            .post(String.format("/param/10"))
+            .then()
+            .statusCode(200)
+            .body(equalTo(String.format("{\"returnedField\":\"%s\"}", 10)));
+    }
+    
+    //TODO: Test for xml with only root field
+    //TODO: Test for key/value
+    //TODO: Test for key=value,key=value for parameters
+    
 	@Test
 	public void testEmptyBodyAndEmptyBodyFile() {
     	wireMockRule.stubFor(any(urlMatching("/any/emptyBodyAndEmptyBodyFile"))
