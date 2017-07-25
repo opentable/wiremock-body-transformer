@@ -287,8 +287,7 @@ public class BodyTransformerTest {
 
 
 	@Test
-	public void testGetWithParameters()
-	{
+	public void testGetWithParameters() {
 		wireMockRule.stubFor(get(urlMatching("/params/slash1/[0-9]+?/slash2/[0-9]+?.*"))
 			.willReturn(aResponse()
 				.withStatus(200)
@@ -313,17 +312,16 @@ public class BodyTransformerTest {
 	}
 
 	@Test
-	public void testGetWithBadParameters()
-	{
-		wireMockRule.stubFor(get(urlMatching("/params/slash1/[0-9]+?/slash2/[0-9]+?.*"))
-			.willReturn(aResponse()
-				.withStatus(200)
-				.withHeader("content-type", "application/json")
-				.withBody("{\"slash1\":\"$(slash1Var)\", \"slash2\":\"$(slash2Var)\", \"one\":\"$(oneVar)\", \"two\":\"$(twoVar)\", \"three\":\"$(threeVar)\"}")
-				.withTransformers("body-transformer")
-				.withTransformerParameter("urlRegex", "/params/slash1/(?<>.*?)/slash2/(?<slash2Var>.*?)\\?one=(?<oneVar>.*?)\\&two=(?<twoVar>.*?)\\&three=(?<threeVar>.*?)")));
-
-		given()
+	public void testGetWithBadParameters() {
+        wireMockRule.stubFor(get(urlMatching("/params/slash1/[0-9]+?/slash2/[0-9]+?.*"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("content-type", "application/json")
+                .withBody("{\"slash1\":\"$(slash1Var)\", \"slash2\":\"$(slash2Var)\", \"one\":\"$(oneVar)\", \"two\":\"$(twoVar)\", \"three\":\"$(threeVar)\"}")
+                .withTransformers("body-transformer")
+                .withTransformerParameter("urlRegex", "/params/slash1/(?<>.*?)/slash2/(?<slash2Var>.*?)\\?one=(?<oneVar>.*?)\\&two=(?<twoVar>.*?)\\&three=(?<threeVar>.*?)")));
+        
+        given()
 			.contentType("application/json")
 			.when()
 			.get("/params/slash1/10/slash2/20?one=value1&two=value2&three=value3")
@@ -331,6 +329,30 @@ public class BodyTransformerTest {
 			.statusCode(500);
 
 	}
+    
+    @Test
+    public void urlRegexParameterWillReplaceFieldFromJsonBodyWithSameName() {
+        String PARAM_NAME = "param1Var";
+        String PARAM_VALUE = "10";
+        String BODY_VALUE = "11";
+        
+        wireMockRule.stubFor(post(urlMatching("/params/param1/[0-9]+?"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("content-type", "application/json")
+                .withBody(String.format("{\"param1\":\"$(%s)\"}", PARAM_NAME))
+                .withTransformers("body-transformer")
+                .withTransformerParameter("urlRegex", String.format("/params/param1/(?<%s>.*?)", PARAM_NAME))));
+        
+        given()
+            .contentType("application/json")
+            .body(String.format("{\"%s\":\"%s\"}", PARAM_NAME, BODY_VALUE))
+            .when()
+            .post(String.format("/params/param1/%s", PARAM_VALUE))
+            .then()
+            .statusCode(200)
+            .body(equalTo(String.format("{\"param1\":\"%s\"}", PARAM_VALUE)));
+    }
 
 	@Test
 	public void testEmptyBodyAndEmptyBodyFile() {
