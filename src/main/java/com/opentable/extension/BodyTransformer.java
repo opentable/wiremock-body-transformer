@@ -40,6 +40,9 @@ import java.util.regex.Pattern;
 
 public class BodyTransformer extends ResponseDefinitionTransformer {
 
+    private static final String TRANSFORMER_NAME = "body-transformer";
+    private static final boolean APPLY_GLOBALLY = false;
+    
     private static final Pattern interpolationPattern = Pattern.compile("\\$\\(.*?\\)");
     private static final Pattern randomIntegerPattern = Pattern.compile("!RandomInteger");
 
@@ -55,12 +58,92 @@ public class BodyTransformer extends ResponseDefinitionTransformer {
         configuration.setXMLTextElementName("value");
         return new XmlMapper(configuration);
     }
-
+    
+    @Override
+    public String getName() {
+        return TRANSFORMER_NAME;
+    }
+    
     @Override
     public boolean applyGlobally() {
-        return false;
+        return APPLY_GLOBALLY;
     }
-
+    
+    @Override
+    public ResponseDefinition transform(Request request, ResponseDefinition responseDefinition, FileSource fileSource, Parameters parameters) {
+        if (hasEmptyResponseBody(responseDefinition)) {
+            return responseDefinition;
+        }
+        
+        Map object = null;
+        String requestBody = request.getBodyAsString();
+        
+        // Trying to create map of request body or query string parameters
+        try {
+            object = jsonMapper.readValue(requestBody, Map.class);
+        } catch (IOException e) {
+            try {
+                object = xmlMapper.readValue(requestBody, Map.class);
+            } catch (IOException ex) {
+                // Validate is a body has the 'name=value' parameters
+                if (StringUtils.isNotEmpty(requestBody) && (requestBody.contains("&") || requestBody.contains("="))) {
+                    object = new HashMap();
+                    String[] pairedValues = requestBody.split("&");
+                    for (String pair : pairedValues) {
+                        String[] values = pair.split("=");
+                        object.put(values[0], values.length > 1 ? decodeUTF8Value(values[1]) : "");
+                    }
+                } else if (request.getAbsoluteUrl().split("\\?").length == 2) { // Validate query string parameters
+                    object = new HashMap();
+                    String absoluteUrl = request.getAbsoluteUrl();
+                    String[] pairedValues = absoluteUrl.split("\\?")[1].split("&");
+                    for (String pair : pairedValues) {
+                        String[] values = pair.split("=");
+                        object.put(values[0], values.length > 1 ? decodeUTF8Value(values[1]) : "");
+                    }
+                } else {
+                    System.err.println("[Body parse error] The body doesn't match any of 3 possible formats (JSON, XML, key=value).");
+                }
+            }
+        }
+        
+        // Update the map with query parameters if any (if same names - replace)
+        if (parameters != null) {
+            String urlRegex = parameters.getString("urlRegex");
+            
+            if (urlRegex != null) {
+                Pattern p = Pattern.compile(urlRegex);
+                Matcher m = p.matcher(request.getUrl());
+                
+                // There may be more groups in the regex than the number of named capturing groups
+                List<String> groups = getNamedGroupCandidates(urlRegex);
+                
+                if (m.matches() &&
+                    groups.size() > 0 &&
+                    groups.size() <= m.groupCount()) {
+                    
+                    for (int i = 0; i < groups.size(); i++) {
+                        
+                        if (object == null) {
+                            object = new HashMap();
+                        }
+                        
+                        object.put(groups.get(i), m.group(i + 1));
+                    }
+                }
+            }
+        }
+        
+        String responseBody = getResponseBody(responseDefinition, fileSource);
+        
+        // Create response by matching request map and response body parametrized values
+        return ResponseDefinitionBuilder
+            .like(responseDefinition).but()
+            .withBodyFile(null)
+            .withBody(transformResponse(object, responseBody))
+            .build();
+    }
+    
     private String transformResponse(Map requestObject, String response) {
         String modifiedResponse = response;
 
@@ -109,79 +192,6 @@ public class BodyTransformer extends ResponseDefinitionTransformer {
         return body;
     }
 
-    @Override
-    public ResponseDefinition transform(Request request, ResponseDefinition responseDefinition, FileSource fileSource, Parameters parameters) {
-        if (hasEmptyResponseBody(responseDefinition)) {
-            return responseDefinition;
-        }
-
-        Map object = null;
-        String requestBody = request.getBodyAsString();
-
-        try {
-            object = jsonMapper.readValue(requestBody, Map.class);
-        } catch (IOException e) {
-            try {
-                object = xmlMapper.readValue(requestBody, Map.class);
-            } catch (IOException ex) {
-                // Validate is a body has the 'name=value' parameters
-                if (StringUtils.isNotEmpty(requestBody) && (requestBody.contains("&") || requestBody.contains("="))) {
-                    object = new HashMap();
-                    String[] pairedValues = requestBody.split("&");
-                    for (String pair : pairedValues) {
-                        String[] values = pair.split("=");
-                        object.put(values[0], values.length > 1 ? decodeUTF8Value(values[1]) : "");
-                    }
-                } else if (request.getAbsoluteUrl().split("\\?").length == 2) { // Validate query string parameters
-                    object = new HashMap();
-                    String absoluteUrl = request.getAbsoluteUrl();
-                    String[] pairedValues = absoluteUrl.split("\\?")[1].split("&");
-                    for (String pair : pairedValues) {
-                        String[] values = pair.split("=");
-                        object.put(values[0], values.length > 1 ? decodeUTF8Value(values[1]) : "");
-                    }
-                } else {
-                    System.err.println("[Body parse error] The body doesn't match any of 3 possible formats (JSON, XML, key=value).");
-                }
-            }
-        }
-
-        // Update the map with query parameters if any
-        if (parameters != null) {
-            String urlRegex = parameters.getString("urlRegex");
-
-            if (urlRegex != null) {
-                Pattern p = Pattern.compile(urlRegex);
-                Matcher m = p.matcher(request.getUrl());
-
-                // There may be more groups in the regex than the number of named capturing groups
-                List<String> groups = getNamedGroupCandidates(urlRegex);
-
-                if (m.matches() &&
-                        groups.size() > 0 &&
-                        groups.size() <= m.groupCount()) {
-
-                    for (int i = 0; i < groups.size(); i++) {
-
-                        if (object == null) {
-                            object = new HashMap();
-                        }
-
-                        object.put(groups.get(i), m.group(i + 1));
-                    }
-                }
-            }
-        }
-
-        String responseBody = getResponseBody(responseDefinition, fileSource);
-
-        return ResponseDefinitionBuilder
-                .like(responseDefinition).but()
-                .withBodyFile(null)
-                .withBody(transformResponse(object, responseBody))
-                .build();
-    }
-
     private static List<String> getNamedGroupCandidates(String regex) {
         List<String> namedGroups = new ArrayList<>();
 
@@ -205,9 +215,5 @@ public class BodyTransformer extends ResponseDefinitionTransformer {
 
         return decodedValue;
     }
-
-    @Override
-    public String getName() {
-        return "body-transformer";
-    }
+    
 }
