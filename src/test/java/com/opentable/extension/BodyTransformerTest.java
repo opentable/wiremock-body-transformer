@@ -35,7 +35,25 @@ public class BodyTransformerTest {
 
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().port(8080).extensions(new BodyTransformer()));
-
+    
+    @Test
+    public void willReturnFieldWithNameValueWhenOnlyRootElementForXml() {
+        wireMockRule.stubFor(post(urlMatching("/test/rootXml"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("content-type", "application/json")
+                .withBody("{\"var\":\"$(value)\"}")
+                .withTransformers("body-transformer")));
+        
+        given()
+            .contentType("application/json")
+            .body("<var>101</var>")
+            .post("/test/rootXml")
+            .then()
+            .statusCode(200)
+            .body("var", equalTo("101"));
+    }
+    
     @Test
     public void testKeyValueAsQueryString() {
         wireMockRule.stubFor(get(urlEqualTo("/test?foo=bar"))
@@ -408,9 +426,6 @@ public class BodyTransformerTest {
             .body("var", equalTo("10"))
             .body("got", equalTo("it"));
     }
-    
-    //TODO: Test for xml with only root field
-    //TODO: Test for key=value,key=value for parameters
     
 	@Test
 	public void testEmptyBodyAndEmptyBodyFile() {
