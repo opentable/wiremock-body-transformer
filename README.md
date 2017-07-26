@@ -103,6 +103,26 @@ returns a body that looks like:
     "three": "value3"
 }
 ```
+Be careful, if you use name of the parameter equal field name from xml,json,key/value body, the URL Pattern Matching parameter will replace this field.
+
+##### Example
+Fetching url `/param/10` with body `var=11&got=it`
+```
+    wireMockRule.stubFor(post(urlMatching("/param/[0-9]+?"))
+        .willReturn(aResponse()
+            .withStatus(200)
+            .withHeader("content-type", "application/json")
+            .withBody("{\"var\":\"$(var)\",\"got\":\"it\"}")
+            .withTransformers("body-transformer")
+            .withTransformerParameter("urlRegex", "/param/(?<var>.*?)")));
+```
+returns a body that looks like:
+```
+{
+    "var":"10",
+    "got":"it"
+}
+```
 
 ### Usage
 
