@@ -370,6 +370,26 @@ public class BodyTransformerTest {
     }
     
     @Test
+    public void urlRegexParameterWillReplaceFieldFromXmlBodyWithSameName() {
+        wireMockRule.stubFor(post(urlMatching("/param/[0-9]+?"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("content-type", "application/json")
+                .withBody("{\"var\":\"$(var)\",\"got\":\"it\"}")
+                .withTransformers("body-transformer")
+                .withTransformerParameter("urlRegex", "/param/(?<var>.*?)")));
+        
+        given()
+            .contentType("application/json")
+            .body("<root><var>11</var></root>")
+            .post("/param/10")
+            .then()
+            .statusCode(200)
+            .body("var", equalTo("10"))
+            .body("got", equalTo("it"));
+    }
+    
+    @Test
     public void urlRegexParameterWillReplaceFieldFromKeyValueBodyRequestWithSameName() {
         wireMockRule.stubFor(post(urlMatching("/param/[0-9]+?"))
             .willReturn(aResponse()
