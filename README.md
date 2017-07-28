@@ -104,6 +104,28 @@ returns a body that looks like:
 }
 ```
 
+**Be careful**, when using 'urlRegex', the value captured by the named group in the regex will take precedence over the variables in the xml/json/key-value request body.
+##### Example
+Fetching url `/param/10` with body `var=11&got=it`
+```
+    wireMockRule.stubFor(post(urlMatching("/param/[0-9]+?"))
+        .willReturn(aResponse()
+            .withStatus(200)
+            .withHeader("content-type", "application/json")
+            .withBody("{\"var\":\"$(var)\",\"got\":\"it\"}")
+            .withTransformers("body-transformer")
+            .withTransformerParameter("urlRegex", "/param/(?<var>.*?)")));
+```
+returns a body that looks like:
+```
+{
+    "var":"10",
+    "got":"it"
+}
+```
+
+So, the **$(var)** was replaced with url regex **var=10** instead of the body **var=11**
+
 ### Usage
 
 #### As part of [Unit Testing with Wiremock](http://wiremock.org/extending-wiremock.html):
