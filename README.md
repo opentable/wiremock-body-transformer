@@ -103,8 +103,8 @@ returns a body that looks like:
     "three": "value3"
 }
 ```
-Be careful, if you use name of the parameter equal field name from xml,json,key/value body, the URL Pattern Matching parameter will replace this field.
 
+**Be careful**, when using 'urlRegex', the value captured by the named group in the regex will take precedence over the variables in the xml/json/key-value request body.
 ##### Example
 Fetching url `/param/10` with body `var=11&got=it`
 ```
@@ -123,6 +123,8 @@ returns a body that looks like:
     "got":"it"
 }
 ```
+
+So, the **$(var)** was replaced with url regex **var=10** instead of the body **var=11**
 
 ### Usage
 
