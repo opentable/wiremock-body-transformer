@@ -35,7 +35,7 @@ public class BodyTransformerTest {
 
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().port(8080).extensions(new BodyTransformer()));
-    
+
     @Test
     public void willReturnFieldWithNameValueWhenOnlyRootElementForXml() {
         wireMockRule.stubFor(post(urlMatching("/test/rootXml"))
@@ -443,5 +443,207 @@ public class BodyTransformerTest {
 
 		wireMockRule.verify(getRequestedFor(urlMatching("/any/emptyBodyAndEmptyBodyFile")));
 	}
+
+	@Test
+	public void shouldReturnAllArrayWithoutIndexForJson() {
+        wireMockRule.stubFor(any(urlMatching("/arrays/json/1"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withBody("{\"result\":$(numbers)}")
+                .withTransformers("body-transformer")));
+
+        given()
+            .when()
+            .body("{\"numbers\":[0, 1, 2]}")
+            .post("/arrays/json/1")
+            .then()
+            .statusCode(200)
+            .body(equalTo("{\"result\":[0, 1, 2]}"));
+    }
+
+    @Test
+    public void shouldReturnFirstElementFromArrayWith0IndexForJson() {
+        wireMockRule.stubFor(any(urlMatching("/arrays/json/2"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withBody("{\"result\":$(numbers[0])}")
+                .withTransformers("body-transformer")));
+
+        given()
+            .when()
+            .body("{\"numbers\":[3, 2, 1]}")
+            .post("/arrays/json/2")
+            .then()
+            .statusCode(200)
+            .body(equalTo("{\"result\":3}"));
+    }
+
+    @Test
+    public void shouldReturnLastElementFromArrayWith2IndexForJson() {
+        wireMockRule.stubFor(any(urlMatching("/arrays/json/3"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withBody("{\"result\":$(numbers[2])}")
+                .withTransformers("body-transformer")));
+
+        given()
+            .when()
+            .body("{\"numbers\":[3, 2, 1]}")
+            .post("/arrays/json/3")
+            .then()
+            .statusCode(200)
+            .body(equalTo("{\"result\":1}"));
+    }
+
+    @Test
+    public void shouldReturnFirstElementFromArrayWith0IndexForXml() {
+        wireMockRule.stubFor(any(urlMatching("/arrays/xml/1"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withBody("<root>$(numbers.number[0])</root>")
+                .withTransformers("body-transformer")));
+
+        given()
+            .when()
+            .body("<root><numbers><number>3</number><number>2</number><number>1</number></numbers></root>")
+            .post("/arrays/xml/1")
+            .then()
+            .statusCode(200)
+            .body(equalTo("<root>3</root>"));
+    }
+
+    @Test
+    public void shouldReturnLastElementFromArrayWith2IndexForXml() {
+        wireMockRule.stubFor(any(urlMatching("/arrays/xml/2"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withBody("<root>$(numbers.number[2])</root>")
+                .withTransformers("body-transformer")));
+
+        given()
+            .when()
+            .body("<root><numbers><number>3</number><number>2</number><number>1</number></numbers></root>")
+            .post("/arrays/xml/2")
+            .then()
+            .statusCode(200)
+            .body(equalTo("<root>1</root>"));
+    }
+
+    @Test
+    public void shouldReturnElementFromNestedJsonArrays() {
+        wireMockRule.stubFor(any(urlMatching("/arrays/json/nested"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withBody("{\"result\":$(item.numbers[1].values[0].value)}")
+                .withTransformers("body-transformer")));
+
+        given()
+            .when()
+            .body("{\"item\": {\"numbers\":[{\"values\": [{\"value\": 1}, {\"value\": 2}]}, {\"values\": [{\"value\": 3}, {\"value\": 4}]}]}}]")
+            .post("/arrays/json/nested")
+            .then()
+            .statusCode(200)
+            .body(equalTo("{\"result\":3}"));
+    }
+
+    @Test
+    public void shouldReturnElementFromNestedXmlArrays() {
+        wireMockRule.stubFor(any(urlMatching("/arrays/xml/nested"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withBody("{\"result\":$(item.numbers.number[0].values.value[1])}")
+                .withTransformers("body-transformer")));
+
+        given()
+            .when()
+            .body("<root><item><numbers><number><values><value>4</value><value>3</value></values></number><number><values><value>2</value><value>1</value></values></number></numbers></item></root>")
+            .post("/arrays/xml/nested")
+            .then()
+            .statusCode(200)
+            .body(equalTo("{\"result\":3}"));
+    }
+
+    @Test
+    public void shouldReturnXmlTypeFromTypedNodeFromXmlArray() {
+        wireMockRule.stubFor(any(urlMatching("/arrays/xml/2"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withBody("<root>$(numbers.number[1].type)</root>")
+                .withTransformers("body-transformer")));
+
+        given()
+            .when()
+            .body("<root><numbers><number>3</number><number type=\"number\">2</number><number>1</number></numbers></root>")
+            .post("/arrays/xml/2")
+            .then()
+            .statusCode(200)
+            .body(equalTo("<root>number</root>"));
+    }
+
+    @Test
+    public void shouldReturnXmlValueFromTypedNodeFromXmlArray() {
+        wireMockRule.stubFor(any(urlMatching("/arrays/xml/2"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withBody("<root>$(numbers.number[1].value)</root>")
+                .withTransformers("body-transformer")));
+
+        given()
+            .when()
+            .body("<root><numbers><number>3</number><number type=\"number\">2</number><number>1</number></numbers></root>")
+            .post("/arrays/xml/2")
+            .then()
+            .statusCode(200)
+            .body(equalTo("<root>2</root>"));
+    }
+
+    @Test
+    public void shouldReturnXmlValueFromUntypedNodeFromXmlArray() {
+        wireMockRule.stubFor(any(urlMatching("/arrays/xml/2"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withBody("<root>$(numbers.number[1].value)</root>")
+                .withTransformers("body-transformer")));
+
+        given()
+            .when()
+            .body("<root><numbers><number>3</number><number>2</number><number>1</number></numbers></root>")
+            .post("/arrays/xml/2")
+            .then()
+            .statusCode(200)
+            .body(equalTo("<root>2</root>"));
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenReferencedItemIsNotList() {
+        wireMockRule.stubFor(any(urlMatching("/arrays/json/3"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withBody("{\"result\":$(numbers[2])}")
+                .withTransformers("body-transformer")));
+
+        given()
+            .when()
+            .body("{\"numbers\": 321}")
+            .post("/arrays/json/3")
+            .then()
+            .statusCode(500);
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenReferencedItemOutOfBounds() {
+        wireMockRule.stubFor(any(urlMatching("/arrays/json/3"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withBody("{\"result\":$(numbers[3])}")
+                .withTransformers("body-transformer")));
+
+        given()
+            .when()
+            .body("{\"numbers\": [3, 2, 1]}")
+            .post("/arrays/json/3")
+            .then()
+            .statusCode(500);
+    }
 
 }
