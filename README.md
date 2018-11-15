@@ -78,6 +78,44 @@ The value `opentable` is referenced via `$(foo.bar)` in your response body.
 ```
 The value `opentable` is referenced via `$(foo.bar.value)` and type 'string' via `$(foo.bar.type)` in your response body.
 
+### Arrays
+You can specify arrays and nested arrays
+
+#### For json
+Examle:
+```
+{
+	"nubmers" : [1, 2, 3]
+}
+```
+The value `2` is referenced via `$(numbers[1])` in your response body.
+
+
+#### For xml
+Examle:
+```
+<root>
+	<nubmers>
+		<number>1</number>
+		<number>2</number>
+		<number>3</number>
+	</nubmers>
+</root>
+```
+The value `2` is referenced via `$(numbers.nubmer[1])` in your response body.
+
+#### Nested arrays
+Examle:
+```
+{
+	"elements" : [
+		{"numbers": [1, 2]}, {"numbers": [3, 4]}
+	]
+}
+```
+The value `2` is referenced via `$(elements[0].numbers[1])` in your response body.
+
+
 ### URL Pattern Matching
 You can use this feature to extract query parameters or parts of the URL. Pass in additional transformer parameters to do url pattern matching. 
 Pass a regex parameter named `urlRegex` to match the url and extract relevant groups. Use named capturing groups in your regex to pass in group names.
