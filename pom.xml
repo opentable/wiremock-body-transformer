@@ -54,6 +54,24 @@
 	</scm>
 
 	<dependencies>
+		<!-- https://mvnrepository.com/artifact/org.thymeleaf/thymeleaf -->
+		<dependency>
+			<groupId>org.thymeleaf</groupId>
+			<artifactId>thymeleaf</artifactId>
+			<version>3.0.11.RELEASE</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>3.8.1</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>com.github.tomakehurst</groupId>
 			<artifactId>wiremock</artifactId>
