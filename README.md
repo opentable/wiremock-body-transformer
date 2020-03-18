@@ -18,8 +18,13 @@ For a given request
     }
 }
 ```
+step1.json
+```
+{"var":"[(${foo})]"}
+[(${session.put('foo', foo)})]
+```
 
-We can store some data in a session object:
+We can store some data in a session object. In the next call we can retrieve that information:
 
 ```json
 {
@@ -37,19 +42,14 @@ We can store some data in a session object:
         }
     }
 }
-
-```
-```json
-{"var":"[(${foo})]"}
-[(${session.put('foo', foo)})]
 ```
 
-And reuse that data in a different request
-
+step2.json
 ```json
 {"var":"[(${session.get('foo')})]"}
 ```
 
+And reuse it for a different response
 
 ## Wiremock Body Transformer
 Wiremock Body Transformer is a [Wiremock](http://wiremock.org/) extension that can take the request body and interpolates the variable into the response.
