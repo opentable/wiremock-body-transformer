@@ -7,6 +7,9 @@ import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 import org.thymeleaf.templateresolver.StringTemplateResolver;
 
 import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.Map;
+
 import static org.junit.Assert.*;
 public class ThymeleafTest {
 
@@ -66,6 +69,32 @@ public class ThymeleafTest {
         templateEngine.process(INPUT, context, stringWriter);
 
         String OUTPUT = "aaaa World";
+        assertEquals(OUTPUT, stringWriter.toString());
+    }
+
+
+    static Map<String, Object> session = new HashMap<>();
+    @Test
+    public void testReuseData() {
+        TemplateEngine templateEngine = new TemplateEngine();
+        StringTemplateResolver templateResolver = new StringTemplateResolver();
+        templateResolver.setTemplateMode("HTML");
+        templateEngine.setTemplateResolver(templateResolver);
+        Context context = new Context();
+        context.setVariable("name", "junit");
+        context.setVariable("session", session);
+        StringWriter stringWriter = new StringWriter();
+
+        String INPUT = "aaaa [(${name})] [(${session.put('zzz', name)})]";
+        templateEngine.process(INPUT, context, stringWriter);
+
+        context.clearVariables();
+        context.setVariable("session", session);
+        stringWriter = new StringWriter();
+        INPUT = "aaaa [(${session.get('zzz')})]";
+        templateEngine.process(INPUT, context, stringWriter);
+
+        String OUTPUT = "aaaa junit";
         assertEquals(OUTPUT, stringWriter.toString());
     }
 }

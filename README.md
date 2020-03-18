@@ -1,3 +1,56 @@
+## Changes to the body transformer
+
+For a given request
+```json
+{
+    "request": {
+        "method": "GET",
+        "urlPattern": "/step1/slash1/[0-9]+?/slash2/[0-9]+?.*"
+    },
+    "response": {
+        "fixedDelayMilliseconds": 200,
+        "status": 200,
+        "bodyFileName": "step1.json",
+        "transformers": ["thymeleaf-body-transformer"],
+        "transformerParameters": {
+            "urlRegex" : "/step1/slash1/(?<slash1Var>.*?)/slash2/(?<slash2Var>.*?)\\?one=(?<oneVar>.*?)\\&two=(?<twoVar>.*?)\\&three=(?<threeVar>.*?)"
+        }
+    }
+}
+```
+
+We can store some data in a session object:
+
+```json
+{
+    "request": {
+        "method": "GET",
+        "urlPattern": "/step2/slash1/[0-9]+?/slash2/[0-9]+?.*"
+    },
+    "response": {
+        "fixedDelayMilliseconds": 200,
+        "status": 200,
+        "bodyFileName": "step2.json",
+        "transformers": ["thymeleaf-body-transformer"],
+        "transformerParameters": {
+            "urlRegex" : "/step2/slash1/(?<slash1Var>.*?)/slash2/(?<slash2Var>.*?)\\?one=(?<oneVar>.*?)\\&two=(?<twoVar>.*?)\\&three=(?<threeVar>.*?)"
+        }
+    }
+}
+
+```
+```json
+{"var":"[(${foo})]"}
+[(${session.put('foo', foo)})]
+```
+
+And reuse that data in a different request
+
+```json
+{"var":"[(${session.get('foo')})]"}
+```
+
+
 ## Wiremock Body Transformer
 Wiremock Body Transformer is a [Wiremock](http://wiremock.org/) extension that can take the request body and interpolates the variable into the response.
 Built on the extensions platform of Wiremock, it allows your wiremock response to be dynamic and dependent on the request for a smarter testing process.

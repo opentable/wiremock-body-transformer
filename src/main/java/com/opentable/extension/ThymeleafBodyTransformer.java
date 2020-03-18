@@ -144,6 +144,7 @@ public class ThymeleafBodyTransformer extends ResponseDefinitionTransformer {
             .build();
     }
 
+    static Map<String, Object> session = new HashMap<>();
     private String transformResponse(Map<String, Object> requestObjects, String response) {
         TemplateEngine templateEngine = new TemplateEngine();
         StringTemplateResolver templateResolver = new StringTemplateResolver();
@@ -152,8 +153,11 @@ public class ThymeleafBodyTransformer extends ResponseDefinitionTransformer {
         Context context = new Context();
 
         context.setVariables(requestObjects);
+        context.setVariable("session", session);
         StringWriter stringWriter = new StringWriter();
+        System.out.println("transformResponse old: " + response);
         templateEngine.process(response, context, stringWriter);
+        System.out.println("transformResponse new: " + stringWriter.toString());
 
 
         return stringWriter.toString();

@@ -462,4 +462,39 @@ public class BodyTransformerTest {
             .body("var", equalTo("101"));
     }
 
+    @Test
+    public void thymeleafWillReturnValueFromSession() {
+        wireMockRule.stubFor(post(urlMatching("/test/step1"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("content-type", "application/json")
+                .withBody("{\"var\":\"[(${value})]\"} [(${session.put('zzz', value)})]")
+                .withTransformers("thymeleaf-body-transformer")));
+
+        wireMockRule.stubFor(post(urlMatching("/test/step2"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("content-type", "application/json")
+                .withBody("{\"var\":\"[(${session.get('zzz')})]\"}")
+                .withTransformers("thymeleaf-body-transformer")));
+
+        given()
+            .contentType("application/json")
+            .body("<var>101</var>")
+            .post("/test/step1")
+            .then()
+            .statusCode(200)
+            .body("var", equalTo("101"));
+
+        given()
+            .contentType("application/json")
+            .body("<var>102</var>")
+            .post("/test/step2")
+            .then()
+            .statusCode(200)
+            .body("var", equalTo("101"));
+
+
+    }
+
 }
