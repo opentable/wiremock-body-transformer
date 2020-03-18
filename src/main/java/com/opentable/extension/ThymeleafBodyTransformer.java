@@ -60,6 +60,16 @@ public class ThymeleafBodyTransformer extends ResponseDefinitionTransformer {
         return new XmlMapper(configuration);
     }
 
+    private TemplateEngine templateEngine = initThymeleaf();
+
+    private static TemplateEngine initThymeleaf() {
+        TemplateEngine templateEngine = new TemplateEngine();
+        StringTemplateResolver templateResolver = new StringTemplateResolver();
+        templateResolver.setTemplateMode("TEXT");
+        templateEngine.setTemplateResolver(templateResolver);
+        return templateEngine;
+    }
+
     @Override
     public String getName() {
         return TRANSFORMER_NAME;
@@ -146,15 +156,13 @@ public class ThymeleafBodyTransformer extends ResponseDefinitionTransformer {
     }
 
     static Map<String, Object> session = new ConcurrentHashMap<>();
-    private String transformResponse(Map<String, Object> requestObjects, String response) {
-        TemplateEngine templateEngine = new TemplateEngine();
-        StringTemplateResolver templateResolver = new StringTemplateResolver();
-        templateResolver.setTemplateMode("TEXT");
-        templateEngine.setTemplateResolver(templateResolver);
-        Context context = new Context();
 
+    private String transformResponse(Map<String, Object> requestObjects, String response) {
+
+        Context context = new Context();
         context.setVariables(requestObjects);
         context.setVariable("session", session);
+
         StringWriter stringWriter = new StringWriter();
         System.out.println("transformResponse old: " + response);
         templateEngine.process(response, context, stringWriter);
@@ -163,6 +171,7 @@ public class ThymeleafBodyTransformer extends ResponseDefinitionTransformer {
 
         return stringWriter.toString();
     }
+
 
     private CharSequence getValue(String group, Map requestObject) {
         if (randomIntegerPattern.matcher(group).find()) {
