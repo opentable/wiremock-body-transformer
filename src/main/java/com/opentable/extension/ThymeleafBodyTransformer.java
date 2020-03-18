@@ -35,6 +35,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -144,7 +145,7 @@ public class ThymeleafBodyTransformer extends ResponseDefinitionTransformer {
             .build();
     }
 
-    static Map<String, Object> session = new HashMap<>();
+    static Map<String, Object> session = new ConcurrentHashMap<>();
     private String transformResponse(Map<String, Object> requestObjects, String response) {
         TemplateEngine templateEngine = new TemplateEngine();
         StringTemplateResolver templateResolver = new StringTemplateResolver();
