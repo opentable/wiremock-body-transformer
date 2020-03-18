@@ -145,6 +145,11 @@ public class ThymeleafBodyTransformer extends ResponseDefinitionTransformer {
             }
         }
 
+        Map<String, Object> finalObject = object;
+        request.getHeaders()
+            .all()
+                .forEach(httpHeader -> finalObject.put(httpHeader.key(), httpHeader.firstValue()));
+
         String responseBody = getResponseBody(responseDefinition, fileSource);
 
         // Create response by matching request map and response body parametrized values

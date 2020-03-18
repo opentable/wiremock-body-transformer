@@ -57,11 +57,11 @@ public class BodyTransformerTest {
     @Test
     public void testKeyValueAsQueryString() {
         wireMockRule.stubFor(get(urlEqualTo("/test?foo=bar"))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withHeader("content-type", "application/json")
-                        .withBody("{\"foo\": \"$(foo)\"}")
-                        .withTransformers("body-transformer")));
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("content-type", "application/json")
+                .withBody("{\"foo\": \"$(foo)\"}")
+                .withTransformers("body-transformer")));
 
         given()
             .contentType("application/json")
@@ -86,20 +86,20 @@ public class BodyTransformerTest {
 
     private void testTopLevelField(String requestBody) {
         wireMockRule.stubFor(post(urlEqualTo("/get/this"))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withHeader("content-type", "application/json")
-                        .withBody("{\"var\":$(var), \"got\":\"it\"}")
-                        .withTransformers("body-transformer")));
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("content-type", "application/json")
+                .withBody("{\"var\":$(var), \"got\":\"it\"}")
+                .withTransformers("body-transformer")));
         given()
-                .contentType("application/json")
-                .body(requestBody)
-                .when()
-                .post("/get/this")
-                .then()
-                .statusCode(200)
-                .body("var", equalTo(1111))
-                .body("got", equalTo("it"));
+            .contentType("application/json")
+            .body(requestBody)
+            .when()
+            .post("/get/this")
+            .then()
+            .statusCode(200)
+            .body("var", equalTo(1111))
+            .body("got", equalTo("it"));
 
         wireMockRule.verify(postRequestedFor(urlEqualTo("/get/this")));
     }
@@ -130,60 +130,60 @@ public class BodyTransformerTest {
 
     private void testKeyValueBodyRequest(String body) {
         wireMockRule.stubFor(post(urlEqualTo("/get/this"))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withHeader("content-type", "application/json")
-                        .withBody("{\"auth_cv_result\":\"$(auth_cv_result)\"}")
-                        .withTransformers("body-transformer")));
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("content-type", "application/json")
+                .withBody("{\"auth_cv_result\":\"$(auth_cv_result)\"}")
+                .withTransformers("body-transformer")));
         given()
-                .contentType("application/x-www-form-urlencoded")
-                .body(body)
-                .when()
-                .post("/get/this")
-                .then()
-                .statusCode(200)
-                .body("auth_cv_result", equalTo("M"));
+            .contentType("application/x-www-form-urlencoded")
+            .body(body)
+            .when()
+            .post("/get/this")
+            .then()
+            .statusCode(200)
+            .body("auth_cv_result", equalTo("M"));
 
         wireMockRule.verify(postRequestedFor(urlEqualTo("/get/this")));
     }
 
     private void testKeyBodyRequest(String body) {
         wireMockRule.stubFor(post(urlEqualTo("/get/this"))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withHeader("content-type", "application/json")
-                        .withBody("{\"EmptyKey\":\"$(EmptyKey)\", \"NotEmptyKey\" : \"$(NotEmptyKey)\"}")
-                        .withTransformers("body-transformer")));
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("content-type", "application/json")
+                .withBody("{\"EmptyKey\":\"$(EmptyKey)\", \"NotEmptyKey\" : \"$(NotEmptyKey)\"}")
+                .withTransformers("body-transformer")));
         given()
-                .contentType("application/x-www-form-urlencoded")
-                .body(body)
-                .when()
-                .post("/get/this")
-                .then()
-                .statusCode(200)
-                .body("EmptyKey", equalTo(""))
-                .body("NotEmptyKey", equalTo("Not Empty Val"));
+            .contentType("application/x-www-form-urlencoded")
+            .body(body)
+            .when()
+            .post("/get/this")
+            .then()
+            .statusCode(200)
+            .body("EmptyKey", equalTo(""))
+            .body("NotEmptyKey", equalTo("Not Empty Val"));
 
         wireMockRule.verify(postRequestedFor(urlEqualTo("/get/this")));
     }
 
     private void testNestedField(String requestBody) {
         wireMockRule.stubFor(post(urlEqualTo("/get/this"))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withHeader("content-type", "application/json")
-                        .withBody("{\"var\":$(var), \"got\":\"it\", \"nested_attr\": \"$(nested.attr)\"}")
-                        .withTransformers("body-transformer")));
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("content-type", "application/json")
+                .withBody("{\"var\":$(var), \"got\":\"it\", \"nested_attr\": \"$(nested.attr)\"}")
+                .withTransformers("body-transformer")));
         given()
-                .contentType("application/json")
-                .body(requestBody)
-                .when()
-                .post("/get/this")
-                .then()
-                .statusCode(200)
-                .body("var", equalTo(1111))
-                .body("got", equalTo("it"))
-                .body("nested_attr", equalTo("found"));
+            .contentType("application/json")
+            .body(requestBody)
+            .when()
+            .post("/get/this")
+            .then()
+            .statusCode(200)
+            .body("var", equalTo(1111))
+            .body("got", equalTo("it"))
+            .body("nested_attr", equalTo("found"));
 
         wireMockRule.verify(postRequestedFor(urlEqualTo("/get/this")));
     }
@@ -196,24 +196,24 @@ public class BodyTransformerTest {
 
     private void testXMLFieldAttributes(String requestBody) {
         wireMockRule.stubFor(post(urlEqualTo("/get/this"))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withHeader("content-type", "application/json")
-                        .withBody("{\"var_type\": \"$(var.type)\", \"var_value\": $(var.value), " +
-                                "\"nested_attr_type\":\"$(nested.attr.type)\", \"nested_attr_value\":\"$(nested.attr.value)\"}")
-                        .withTransformers("body-transformer")));
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("content-type", "application/json")
+                .withBody("{\"var_type\": \"$(var.type)\", \"var_value\": $(var.value), " +
+                    "\"nested_attr_type\":\"$(nested.attr.type)\", \"nested_attr_value\":\"$(nested.attr.value)\"}")
+                .withTransformers("body-transformer")));
 
         given()
-                .contentType("application/json")
-                .body(requestBody)
-                .when()
-                .post("/get/this")
-                .then()
-                .statusCode(200)
-                .body("var_type", equalTo("number"))
-                .body("var_value", equalTo(1111))
-                .body("nested_attr_type", equalTo("string"))
-                .body("nested_attr_value", equalTo("found"));
+            .contentType("application/json")
+            .body(requestBody)
+            .when()
+            .post("/get/this")
+            .then()
+            .statusCode(200)
+            .body("var_type", equalTo("number"))
+            .body("var_value", equalTo(1111))
+            .body("nested_attr_type", equalTo("string"))
+            .body("nested_attr_value", equalTo("found"));
 
         wireMockRule.verify(postRequestedFor(urlEqualTo("/get/this")));
     }
@@ -221,20 +221,20 @@ public class BodyTransformerTest {
     @Test
     public void nullVariableNotFound() throws Exception {
         wireMockRule.stubFor(post(urlEqualTo("/get/this"))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withHeader("content-type", "application/json")
-                        .withBody("{\"var\":$(var)}")
-                        .withTransformers("body-transformer")));
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("content-type", "application/json")
+                .withBody("{\"var\":$(var)}")
+                .withTransformers("body-transformer")));
 
         given()
-                .contentType("application/json")
-                .body("{\"something\":\"different\"}")
-                .when()
-                .post("/get/this")
-                .then()
-                .statusCode(200)
-                .body("var", equalTo(null));
+            .contentType("application/json")
+            .body("{\"something\":\"different\"}")
+            .when()
+            .post("/get/this")
+            .then()
+            .statusCode(200)
+            .body("var", equalTo(null));
 
         wireMockRule.verify(postRequestedFor(urlEqualTo("/get/this")));
     }
@@ -242,19 +242,19 @@ public class BodyTransformerTest {
     @Test
     public void doesNotApplyGlobally() throws Exception {
         wireMockRule.stubFor(post(urlEqualTo("/get/this"))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withHeader("content-type", "application/json")
-                        .withBody("{\"var\":$(var)}")));
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("content-type", "application/json")
+                .withBody("{\"var\":$(var)}")));
 
         given()
-                .contentType("application/json")
-                .body("{\"var\":\"foo\"}")
-                .when()
-                .post("/get/this")
-                .then()
-                .statusCode(200)
-                .body(equalTo("{\"var\":$(var)}"));
+            .contentType("application/json")
+            .body("{\"var\":\"foo\"}")
+            .when()
+            .post("/get/this")
+            .then()
+            .statusCode(200)
+            .body(equalTo("{\"var\":$(var)}"));
 
         wireMockRule.verify(postRequestedFor(urlEqualTo("/get/this")));
     }
@@ -262,21 +262,21 @@ public class BodyTransformerTest {
     @Test
     public void injectRandomInteger() {
         wireMockRule.stubFor(post(urlEqualTo("/get/this"))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withHeader("content-type", "application/json")
-                        .withBody("{\"randomNumber\":$(!RandomInteger), \"got\":\"it\"}")
-                        .withTransformers("body-transformer")));
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("content-type", "application/json")
+                .withBody("{\"randomNumber\":$(!RandomInteger), \"got\":\"it\"}")
+                .withTransformers("body-transformer")));
 
         given()
-                .contentType("application/json")
-                .body("{\"var\":1111}")
-                .when()
-                .post("/get/this")
-                .then()
-                .statusCode(200)
-                .body("randomNumber", isA(Integer.class))
-                .body("got", equalTo("it"));
+            .contentType("application/json")
+            .body("{\"var\":1111}")
+            .when()
+            .post("/get/this")
+            .then()
+            .statusCode(200)
+            .body("randomNumber", isA(Integer.class))
+            .body("got", equalTo("it"));
 
         wireMockRule.verify(postRequestedFor(urlEqualTo("/get/this")));
     }
@@ -284,53 +284,53 @@ public class BodyTransformerTest {
     @Test
     public void withBodyFileName() throws Exception {
         wireMockRule.stubFor(post(urlEqualTo("/get/this"))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withHeader("content-type", "application/json")
-                        .withBodyFile("body.json")
-                        .withTransformers("body-transformer")));
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("content-type", "application/json")
+                .withBodyFile("body.json")
+                .withTransformers("body-transformer")));
 
         given()
-                .contentType("application/json")
-                .body("{\"var\":1111}")
-                .when()
-                .post("/get/this")
-                .then()
-                .statusCode(200)
-                .body("var", equalTo(1111))
-                .body("got", equalTo("it"));
+            .contentType("application/json")
+            .body("{\"var\":1111}")
+            .when()
+            .post("/get/this")
+            .then()
+            .statusCode(200)
+            .body("var", equalTo(1111))
+            .body("got", equalTo("it"));
 
         wireMockRule.verify(postRequestedFor(urlEqualTo("/get/this")));
     }
 
 
-	@Test
-	public void testGetWithParameters() {
-		wireMockRule.stubFor(get(urlMatching("/params/slash1/[0-9]+?/slash2/[0-9]+?.*"))
-			.willReturn(aResponse()
-				.withStatus(200)
-				.withHeader("content-type", "application/json")
-				.withBody("{\"slash1\":\"$(slash1Var)\", \"slash2\":\"$(slash2Var)\", \"one\":\"$(oneVar)\", \"two\":\"$(twoVar)\", \"three\":\"$(threeVar)\"}")
-				.withTransformers("body-transformer")
-				.withTransformerParameter("urlRegex", "/params/slash1/(?<slash1Var>.*?)/slash2/(?<slash2Var>.*?)\\?one=(?<oneVar>.*?)\\&two=(?<twoVar>.*?)\\&three=(?<threeVar>.*?)")));
+    @Test
+    public void testGetWithParameters() {
+        wireMockRule.stubFor(get(urlMatching("/params/slash1/[0-9]+?/slash2/[0-9]+?.*"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("content-type", "application/json")
+                .withBody("{\"slash1\":\"$(slash1Var)\", \"slash2\":\"$(slash2Var)\", \"one\":\"$(oneVar)\", \"two\":\"$(twoVar)\", \"three\":\"$(threeVar)\"}")
+                .withTransformers("body-transformer")
+                .withTransformerParameter("urlRegex", "/params/slash1/(?<slash1Var>.*?)/slash2/(?<slash2Var>.*?)\\?one=(?<oneVar>.*?)\\&two=(?<twoVar>.*?)\\&three=(?<threeVar>.*?)")));
 
-		given()
-			.contentType("application/json")
-			.when()
-			.get("/params/slash1/10/slash2/20?one=value1&two=value2&three=value3")
-			.then()
-			.statusCode(200)
-			.body("slash1", equalTo("10"))
-			.body("slash2", equalTo("20"))
-			.body("one", equalTo("value1"))
-			.body("two", equalTo("value2"))
-			.body("three", equalTo("value3"));
+        given()
+            .contentType("application/json")
+            .when()
+            .get("/params/slash1/10/slash2/20?one=value1&two=value2&three=value3")
+            .then()
+            .statusCode(200)
+            .body("slash1", equalTo("10"))
+            .body("slash2", equalTo("20"))
+            .body("one", equalTo("value1"))
+            .body("two", equalTo("value2"))
+            .body("three", equalTo("value3"));
 
-		wireMockRule.verify(getRequestedFor(urlMatching("/params/slash1/[0-9]+?/slash2/[0-9]+?.*")));
-	}
+        wireMockRule.verify(getRequestedFor(urlMatching("/params/slash1/[0-9]+?/slash2/[0-9]+?.*")));
+    }
 
-	@Test
-	public void testGetWithBadParameters() {
+    @Test
+    public void testGetWithBadParameters() {
         wireMockRule.stubFor(get(urlMatching("/params/slash1/[0-9]+?/slash2/[0-9]+?.*"))
             .willReturn(aResponse()
                 .withStatus(200)
@@ -340,12 +340,12 @@ public class BodyTransformerTest {
                 .withTransformerParameter("urlRegex", "/params/slash1/(?<>.*?)/slash2/(?<slash2Var>.*?)\\?one=(?<oneVar>.*?)\\&two=(?<twoVar>.*?)\\&three=(?<threeVar>.*?)")));
 
         given()
-			.contentType("application/json")
-			.when()
-			.get("/params/slash1/10/slash2/20?one=value1&two=value2&three=value3")
-			.then()
-			.statusCode(500);
-	}
+            .contentType("application/json")
+            .when()
+            .get("/params/slash1/10/slash2/20?one=value1&two=value2&three=value3")
+            .then()
+            .statusCode(500);
+    }
 
     @Test
     public void urlRegexParameterWillReplaceFieldFromJsonBodyWithSameName() {
@@ -427,22 +427,22 @@ public class BodyTransformerTest {
             .body("got", equalTo("it"));
     }
 
-	@Test
-	public void testEmptyBodyAndEmptyBodyFile() {
-    	wireMockRule.stubFor(any(urlMatching("/any/emptyBodyAndEmptyBodyFile"))
-			.willReturn(aResponse()
-				.withStatus(200)
-				.withTransformers("body-transformer")));
+    @Test
+    public void testEmptyBodyAndEmptyBodyFile() {
+        wireMockRule.stubFor(any(urlMatching("/any/emptyBodyAndEmptyBodyFile"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withTransformers("body-transformer")));
 
-    	given()
-			.when()
-			.get("/any/emptyBodyAndEmptyBodyFile")
-			.then()
-			.statusCode(200)
-			.body(equalTo(""));
+        given()
+            .when()
+            .get("/any/emptyBodyAndEmptyBodyFile")
+            .then()
+            .statusCode(200)
+            .body(equalTo(""));
 
-		wireMockRule.verify(getRequestedFor(urlMatching("/any/emptyBodyAndEmptyBodyFile")));
-	}
+        wireMockRule.verify(getRequestedFor(urlMatching("/any/emptyBodyAndEmptyBodyFile")));
+    }
 
     @Test
     public void thymeleafWillReturnFieldWithNameValueWhenOnlyRootElementForXml() {
@@ -460,6 +460,25 @@ public class BodyTransformerTest {
             .then()
             .statusCode(200)
             .body("var", equalTo("101"));
+    }
+
+    @Test
+    public void thymeleafHeaderValue() {
+        wireMockRule.stubFor(post(urlMatching("/test/header"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("content-type", "application/json")
+                .withBody("{\"var\":\"[(${bar})]\"}")
+                .withTransformers("thymeleaf-body-transformer")));
+
+        given()
+            .contentType("application/json")
+            .body("<var>101</var>")
+            .header("bar", "baz")
+            .post("/test/header")
+            .then()
+            .statusCode(200)
+            .body("var", equalTo("baz"));
     }
 
     @Test
