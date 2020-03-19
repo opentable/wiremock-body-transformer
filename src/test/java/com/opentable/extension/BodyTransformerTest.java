@@ -15,8 +15,11 @@
 package com.opentable.extension;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
+
+import java.util.UUID;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
@@ -28,6 +31,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static com.jayway.restassured.RestAssured.given;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.isA;
 
@@ -479,6 +483,25 @@ public class BodyTransformerTest {
             .then()
             .statusCode(200)
             .body("var", equalTo("baz"));
+    }
+
+    @Test
+    public void thymeleafUuidValue() {
+        wireMockRule.stubFor(post(urlMatching("/test/uuid"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("content-type", "application/json")
+                .withBody("{\"var\":\"[(${utils.uuid()})]\"}")
+                .withTransformers("thymeleaf-body-transformer")));
+
+        given()
+            .contentType("application/json")
+            .body("<var>101</var>")
+            .header("bar", "baz")
+            .post("/test/uuid")
+            .then()
+            .statusCode(200)
+            .body("var", notNullValue());
     }
 
     @Test

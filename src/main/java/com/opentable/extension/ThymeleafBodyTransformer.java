@@ -61,6 +61,7 @@ public class ThymeleafBodyTransformer extends ResponseDefinitionTransformer {
     }
 
     private TemplateEngine templateEngine = initThymeleaf();
+    private static final Utils utils = new Utils();
 
     private static TemplateEngine initThymeleaf() {
         TemplateEngine templateEngine = new TemplateEngine();
@@ -167,6 +168,7 @@ public class ThymeleafBodyTransformer extends ResponseDefinitionTransformer {
         Context context = new Context();
         context.setVariables(requestObjects);
         context.setVariable("session", session);
+        context.setVariable("utils", utils);
 
         StringWriter stringWriter = new StringWriter();
         System.out.println("transformResponse old: " + response);
@@ -237,4 +239,11 @@ public class ThymeleafBodyTransformer extends ResponseDefinitionTransformer {
         return decodedValue;
     }
 
+
+    static class Utils {
+
+        public String uuid() {
+            return UUID.randomUUID().toString();
+        }
+    }
 }
