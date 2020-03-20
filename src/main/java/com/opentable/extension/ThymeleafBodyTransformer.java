@@ -22,6 +22,7 @@ import com.github.tomakehurst.wiremock.common.BinaryFile;
 import com.github.tomakehurst.wiremock.common.FileSource;
 import com.github.tomakehurst.wiremock.extension.Parameters;
 import com.github.tomakehurst.wiremock.extension.ResponseDefinitionTransformer;
+import com.github.tomakehurst.wiremock.http.HttpHeaders;
 import com.github.tomakehurst.wiremock.http.Request;
 import com.github.tomakehurst.wiremock.http.ResponseDefinition;
 import org.apache.commons.lang3.StringUtils;
@@ -38,6 +39,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class ThymeleafBodyTransformer extends ResponseDefinitionTransformer {
 
@@ -146,10 +149,16 @@ public class ThymeleafBodyTransformer extends ResponseDefinitionTransformer {
             }
         }
 
+        if (object == null) {
+            object = new HashMap();
+        }
         Map<String, Object> finalObject = object;
-        request.getHeaders()
-            .all()
-                .forEach(httpHeader -> finalObject.put(httpHeader.key(), httpHeader.firstValue()));
+        HttpHeaders headers = request.getHeaders();
+
+        if (headers.size()>0)
+            headers
+                .all()
+                .forEach(httpHeader -> finalObject.put(httpHeader.key().replaceAll("-",""), httpHeader.firstValue()));
 
         String responseBody = getResponseBody(responseDefinition, fileSource);
 
@@ -244,6 +253,12 @@ public class ThymeleafBodyTransformer extends ResponseDefinitionTransformer {
 
         public String uuid() {
             return UUID.randomUUID().toString();
+        }
+
+        public List<Integer> list(int size) {
+            return IntStream.range(0, size)
+                    .boxed()
+                    .collect(Collectors.toList());
         }
     }
 }

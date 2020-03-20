@@ -51,6 +51,22 @@ step2.json
 
 And reuse it for a different response
 
+## Lists
+
+```
+{ "list" : [
+                [# th:each="element,index : ${utils.list(5)}" ]
+                [(${index.current})]
+                [# th:if="!${index.last}" ],[/]
+            [/]
+            ]
+}
+```
+produces
+```json
+{ "list" : [0,1,2,3,4]}
+```
+
 ## Wiremock Body Transformer
 Wiremock Body Transformer is a [Wiremock](http://wiremock.org/) extension that can take the request body and interpolates the variable into the response.
 Built on the extensions platform of Wiremock, it allows your wiremock response to be dynamic and dependent on the request for a smarter testing process.

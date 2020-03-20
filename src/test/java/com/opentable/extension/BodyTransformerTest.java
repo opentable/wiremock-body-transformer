@@ -31,9 +31,9 @@ import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static com.jayway.restassured.RestAssured.given;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.isA;
+import static org.hamcrest.Matchers.*;
 
 public class BodyTransformerTest {
 
@@ -486,6 +486,25 @@ public class BodyTransformerTest {
     }
 
     @Test
+    public void thymeleafHeader2Value() {
+        wireMockRule.stubFor(post(urlMatching("/test/header"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("content-type", "application/json")
+                .withBody("{\"var\":\"[(${foobarzzz})]\"}")
+                .withTransformers("thymeleaf-body-transformer")));
+
+        given()
+            .contentType("application/json")
+            .body("<var>101</var>")
+            .header("foo-bar-zzz", "baz")
+            .post("/test/header")
+            .then()
+            .statusCode(200)
+            .body("var", equalTo("baz"));
+    }
+
+    @Test
     public void thymeleafUuidValue() {
         wireMockRule.stubFor(post(urlMatching("/test/uuid"))
             .willReturn(aResponse()
@@ -502,6 +521,29 @@ public class BodyTransformerTest {
             .then()
             .statusCode(200)
             .body("var", notNullValue());
+    }
+
+    @Test
+    public void thymeleafListValue() {
+        wireMockRule.stubFor(post(urlMatching("/test/list"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("content-type", "application/json")
+                .withBody("{ \"list\" : [" +
+                                         "[# th:each=\"element,index : ${utils.list(5)}\" ]" +
+                                            "[(${index.current})]" +
+                                            "[# th:if=\"!${index.last}\" ],[/]" +
+                                         "[/]" +
+                                        "]" +
+                            "}")
+                .withTransformers("thymeleaf-body-transformer")));
+
+        given()
+            .contentType("application/json")
+            .post("/test/list")
+            .then()
+            .statusCode(200)
+            .body("list", Matchers.hasItems(0, 1, 2, 3, 4));
     }
 
     @Test
