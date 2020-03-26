@@ -581,4 +581,22 @@ public class BodyTransformerTest {
 
     }
 
+    @Test
+    public void thymeleafWrongVariableNameGetError() {
+        wireMockRule.stubFor(post(urlMatching("/test/step1"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("content-type", "application/json")
+                .withBody("{[(${util.uuid()})]}")
+                .withTransformers("thymeleaf-body-transformer")));
+
+        given()
+            .contentType("application/json")
+            .post("/test/step1")
+            .then()
+            .statusCode(500);
+
+
+    }
+
 }
