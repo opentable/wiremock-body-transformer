@@ -581,4 +581,25 @@ public class BodyTransformerTest {
 
     }
 
+    @Test
+    public void returnValueFromJwt() {
+        wireMockRule.stubFor(post(urlMatching("/test/step1"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("content-type", "application/json")
+                .withBody("{\"var\":\"[(${utils.accessToken(xjwt).getClaimValue('name')})]\"}")
+                .withTransformers("thymeleaf-body-transformer")));
+
+
+        given()
+            .contentType("application/json")
+            .header("x-jwt", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c")
+            .post("/test/step1")
+            .then()
+            .statusCode(200)
+            .body("var", equalTo("John Doe"));
+
+
+    }
+
 }

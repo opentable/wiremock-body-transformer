@@ -26,6 +26,12 @@ import com.github.tomakehurst.wiremock.http.HttpHeaders;
 import com.github.tomakehurst.wiremock.http.Request;
 import com.github.tomakehurst.wiremock.http.ResponseDefinition;
 import org.apache.commons.lang3.StringUtils;
+import org.jose4j.jwa.AlgorithmConstraints;
+import org.jose4j.jws.AlgorithmIdentifiers;
+import org.jose4j.jwt.JwtClaims;
+import org.jose4j.jwt.consumer.InvalidJwtException;
+import org.jose4j.jwt.consumer.JwtConsumer;
+import org.jose4j.jwt.consumer.JwtConsumerBuilder;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.templateresolver.StringTemplateResolver;
@@ -259,6 +265,24 @@ public class ThymeleafBodyTransformer extends ResponseDefinitionTransformer {
             return IntStream.range(0, size)
                     .boxed()
                     .collect(Collectors.toList());
+        }
+        public JwtClaims accessToken(String jwt) throws InvalidJwtException {
+
+
+            JwtConsumer jwtConsumer = new JwtConsumerBuilder()
+                .setSkipAllValidators()
+                .setSkipSignatureVerification()
+                .build();
+
+            try {
+
+                JwtClaims jwtClaims = jwtConsumer.processToClaims(jwt);
+                return jwtClaims;
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.err.println(e);
+                return null;
+            }
         }
     }
 }
