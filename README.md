@@ -67,6 +67,25 @@ produces
 { "list" : [0,1,2,3,4]}
 ```
 
+## JWT support
+
+We can extract values from the JWT  by passing the header value to the `accessToken` util method:
+```
+{"var":"[(${utils.accessToken(xjwt).getClaimValue('name')})]"}
+```
+
+Based on the expression above, the `x-jwt` header would transform the var value to 'John Doe'
+
+```java
+ given()
+            .contentType("application/json")
+            .header("x-jwt", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c")
+            .post("/test/step1")
+            .then()
+            .statusCode(200)
+            .body("var", equalTo("John Doe"));
+```
+
 ## Wiremock Body Transformer
 Wiremock Body Transformer is a [Wiremock](http://wiremock.org/) extension that can take the request body and interpolates the variable into the response.
 Built on the extensions platform of Wiremock, it allows your wiremock response to be dynamic and dependent on the request for a smarter testing process.

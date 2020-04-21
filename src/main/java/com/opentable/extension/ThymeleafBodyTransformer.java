@@ -26,8 +26,6 @@ import com.github.tomakehurst.wiremock.http.HttpHeaders;
 import com.github.tomakehurst.wiremock.http.Request;
 import com.github.tomakehurst.wiremock.http.ResponseDefinition;
 import org.apache.commons.lang3.StringUtils;
-import org.jose4j.jwa.AlgorithmConstraints;
-import org.jose4j.jws.AlgorithmIdentifiers;
 import org.jose4j.jwt.JwtClaims;
 import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.jose4j.jwt.consumer.JwtConsumer;
@@ -161,10 +159,10 @@ public class ThymeleafBodyTransformer extends ResponseDefinitionTransformer {
         Map<String, Object> finalObject = object;
         HttpHeaders headers = request.getHeaders();
 
-        if (headers.size()>0)
+        if (headers.size() > 0)
             headers
                 .all()
-                .forEach(httpHeader -> finalObject.put(httpHeader.key().replaceAll("-",""), httpHeader.firstValue()));
+                .forEach(httpHeader -> finalObject.put(httpHeader.key().replaceAll("-", ""), httpHeader.firstValue()));
 
         String responseBody = getResponseBody(responseDefinition, fileSource);
 
@@ -263,12 +261,11 @@ public class ThymeleafBodyTransformer extends ResponseDefinitionTransformer {
 
         public List<Integer> list(int size) {
             return IntStream.range(0, size)
-                    .boxed()
-                    .collect(Collectors.toList());
+                .boxed()
+                .collect(Collectors.toList());
         }
+
         public JwtClaims accessToken(String jwt) throws InvalidJwtException {
-
-
             JwtConsumer jwtConsumer = new JwtConsumerBuilder()
                 .setSkipAllValidators()
                 .setSkipSignatureVerification()
@@ -280,8 +277,7 @@ public class ThymeleafBodyTransformer extends ResponseDefinitionTransformer {
                 return jwtClaims;
             } catch (Exception e) {
                 e.printStackTrace();
-                System.err.println(e);
-                return null;
+                throw e;
             }
         }
     }
