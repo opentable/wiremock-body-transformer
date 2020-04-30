@@ -85,6 +85,15 @@ Based on the expression above, the `x-jwt` header would transform the var value 
             .statusCode(200)
             .body("var", equalTo("John Doe"));
 ```
+
+We can generate a jwt with a specified subject
+```json
+{"jwt":"[(${utils.jwt('123')})]"}
+```
+Result is:
+```json
+{"jwt":"eyJhbGciOiJSUzI1NiJ9.eyJleHAiOjE1ODgyODI4NjUsImp0aSI6ImJPYm52VXQ2dTZUN05SWEJwdWFFOEEiLCJpYXQiOjE1ODgyODIyNjUsIm5iZiI6MTU4ODI4MjE0NSwic3ViIjoiMTIzIn0.fwTDFWFNHR5HNq47ctKDLLP-5ML2h4sAh6dkZfxAix7kQ7DoLUqHusUm21deRe6VnkYisvoqV0Qyi_p4QgJFNzB6rgODIM41SjvopelQdueVSys9eNnTVr5nmwyyNLvzuutfd0xzYlJyHgjlAMa8Yw2RwxJRvKJo2NtsV02LpmWTUHQoccGfkl1yGabsfilGa-P4G4YpOWvKmJcwBpFwMp50AHXYY1oPhIsunaeeIskhgiEbhQMvBIMCu_R_UbGRNTEldGleqSGjsKqhkUDNi-q7VIBMiPSQYolzhMrkRbq891BzM1odEGviToMU1sEkgFP287f-_w4UqqD14tFWWA"}
+```
 ## Time support
 ```
 {"var":"[(${#temporals.formatISO(#temporals.createNow())})]"}

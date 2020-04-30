@@ -645,6 +645,27 @@ public class BodyTransformerTest {
     }
 
     @Test
+    public void generateJwt() {
+        wireMockRule.stubFor(post(urlMatching("/test/step1"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("content-type", "application/json")
+                .withBody("{\"var\":\"[(${utils.accessToken(utils.jwt('123')).getClaimValue('sub')})]\"," +
+                    "\"jwt\":\"[(${utils.jwt('123')})]\"}")
+                .withTransformers("thymeleaf-body-transformer")));
+
+
+        given()
+            .contentType("application/json")
+            .post("/test/step1")
+            .then()
+            .statusCode(200)
+            .body("var", equalTo("123"));
+
+
+    }
+
+    @Test
     public void thymeleafWrongVariableNameGetError() {
         wireMockRule.stubFor(post(urlMatching("/test/step1"))
             .willReturn(aResponse()
