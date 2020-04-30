@@ -25,9 +25,7 @@ import com.github.tomakehurst.wiremock.extension.ResponseDefinitionTransformer;
 import com.github.tomakehurst.wiremock.http.HttpHeaders;
 import com.github.tomakehurst.wiremock.http.Request;
 import com.github.tomakehurst.wiremock.http.ResponseDefinition;
-import com.sun.org.apache.xml.internal.security.algorithms.SignatureAlgorithm;
 import org.apache.commons.lang3.StringUtils;
-import org.jose4j.jwa.AlgorithmConstraints;
 import org.jose4j.jwk.RsaJsonWebKey;
 import org.jose4j.jwk.RsaJwkGenerator;
 import org.jose4j.jws.AlgorithmIdentifiers;
@@ -200,7 +198,7 @@ public class ThymeleafBodyTransformer extends ResponseDefinitionTransformer {
         System.out.println("transformResponse old: " + response);
         try {
             templateEngine.process(response, context, stringWriter);
-        }catch(RuntimeException ex){
+        } catch (RuntimeException ex) {
             ex.printStackTrace();
             throw ex;
         }
@@ -319,27 +317,27 @@ public class ThymeleafBodyTransformer extends ResponseDefinitionTransformer {
         }
 
         public String jwt(String subject) throws JoseException {
-           try {
-               // Create the Claims, which will be the content of the JWT
-               JwtClaims claims = new JwtClaims();
-               claims.setExpirationTimeMinutesInTheFuture(10); // time when the token will expire (10 minutes from now)
-               claims.setGeneratedJwtId(); // a unique identifier for the token
-               claims.setIssuedAtToNow();  // when the token was issued/created (now)
-               claims.setNotBeforeMinutesInThePast(2); // time before which the token is not yet valid (2 minutes ago)
-               claims.setSubject(subject); // the subject/principal is whom the token is about
+            try {
+                // Create the Claims, which will be the content of the JWT
+                JwtClaims claims = new JwtClaims();
+                claims.setExpirationTimeMinutesInTheFuture(10); // time when the token will expire (10 minutes from now)
+                claims.setGeneratedJwtId(); // a unique identifier for the token
+                claims.setIssuedAtToNow();  // when the token was issued/created (now)
+                claims.setNotBeforeMinutesInThePast(2); // time before which the token is not yet valid (2 minutes ago)
+                claims.setSubject(subject); // the subject/principal is whom the token is about
 
-               // A JWT is a JWS and/or a JWE with JSON claims as the payload.
-               // In this example it is a JWS so we create a JsonWebSignature object.
-               JsonWebSignature jws = new JsonWebSignature();
+                // A JWT is a JWS and/or a JWE with JSON claims as the payload.
+                // In this example it is a JWS so we create a JsonWebSignature object.
+                JsonWebSignature jws = new JsonWebSignature();
 
-               // The JWT is signed using the private key
-               jws.setKey(rsaJsonWebKey.getPrivateKey());
-               // The payload of the JWS is JSON content of the JWT Claims
-               jws.setPayload(claims.toJson());
-               // Set the signature algorithm on the JWT/JWS that will integrity protect the claims
-               jws.setAlgorithmHeaderValue(AlgorithmIdentifiers.RSA_USING_SHA256);
+                // The JWT is signed using the private key
+                jws.setKey(rsaJsonWebKey.getPrivateKey());
+                // The payload of the JWS is JSON content of the JWT Claims
+                jws.setPayload(claims.toJson());
+                // Set the signature algorithm on the JWT/JWS that will integrity protect the claims
+                jws.setAlgorithmHeaderValue(AlgorithmIdentifiers.RSA_USING_SHA256);
 
-               return jws.getCompactSerialization();
+                return jws.getCompactSerialization();
 
             } catch (Exception e) {
                 e.printStackTrace();
