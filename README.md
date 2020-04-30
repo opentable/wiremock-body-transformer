@@ -85,7 +85,22 @@ Based on the expression above, the `x-jwt` header would transform the var value 
             .statusCode(200)
             .body("var", equalTo("John Doe"));
 ```
-
+## Time support
+```
+{"var":"[(${#temporals.formatISO(#temporals.createNow())})]"}
+```
+Evaluates to:
+```json
+{"var":"2020-04-30T15:04:58.225+0000"}
+```
+## Global counter
+```json
+{"var":"[(${counter.incrementAndGet()})]", "var2":"[(${counter.incrementAndGet()})]"}
+```
+Evaluates to:
+ ```json
+{"var":"1", "var2":"2"}
+ ```
 ## Wiremock Body Transformer
 Wiremock Body Transformer is a [Wiremock](http://wiremock.org/) extension that can take the request body and interpolates the variable into the response.
 Built on the extensions platform of Wiremock, it allows your wiremock response to be dynamic and dependent on the request for a smarter testing process.
