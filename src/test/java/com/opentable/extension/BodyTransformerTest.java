@@ -19,6 +19,8 @@ import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
@@ -598,6 +600,46 @@ public class BodyTransformerTest {
             .then()
             .statusCode(200)
             .body("var", equalTo("John Doe"));
+
+
+    }
+
+    @Test
+    public void formatDate() {
+        wireMockRule.stubFor(post(urlMatching("/test/step1"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("content-type", "application/json")
+                .withBody("{\"var\":\"[(${#temporals.formatISO(#temporals.createNow())})]\"}")
+                .withTransformers("thymeleaf-body-transformer")));
+
+
+        given()
+            .contentType("application/json")
+            .post("/test/step1")
+            .then()
+            .statusCode(200)
+            .body("var", startsWith(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE)));
+
+
+    }
+    @Test
+    public void counter() {
+        wireMockRule.stubFor(post(urlMatching("/test/step1"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("content-type", "application/json")
+                .withBody("{\"var\":\"[(${counter.incrementAndGet()})]\", \"var2\":\"[(${counter.incrementAndGet()})]\"}")
+                .withTransformers("thymeleaf-body-transformer")));
+
+
+        given()
+            .contentType("application/json")
+            .post("/test/step1")
+            .then()
+            .statusCode(200)
+            .body("var", equalTo("1"))
+            .body("var2", equalTo("2"));
 
 
     }

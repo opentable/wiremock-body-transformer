@@ -32,6 +32,7 @@ import org.jose4j.jwt.consumer.JwtConsumer;
 import org.jose4j.jwt.consumer.JwtConsumerBuilder;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
+import org.thymeleaf.extras.java8time.dialect.Java8TimeDialect;
 import org.thymeleaf.templateresolver.StringTemplateResolver;
 
 import java.io.IOException;
@@ -41,6 +42,7 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -72,6 +74,8 @@ public class ThymeleafBodyTransformer extends ResponseDefinitionTransformer {
 
     private static TemplateEngine initThymeleaf() {
         TemplateEngine templateEngine = new TemplateEngine();
+        templateEngine.addDialect(new Java8TimeDialect());
+
         StringTemplateResolver templateResolver = new StringTemplateResolver();
         templateResolver.setTemplateMode("TEXT");
         templateEngine.setTemplateResolver(templateResolver);
@@ -175,6 +179,7 @@ public class ThymeleafBodyTransformer extends ResponseDefinitionTransformer {
     }
 
     static Map<String, Object> session = new ConcurrentHashMap<>();
+    static AtomicInteger counter = new AtomicInteger();
 
     private String transformResponse(Map<String, Object> requestObjects, String response) {
 
@@ -182,6 +187,7 @@ public class ThymeleafBodyTransformer extends ResponseDefinitionTransformer {
         context.setVariables(requestObjects);
         context.setVariable("session", session);
         context.setVariable("utils", utils);
+        context.setVariable("counter", counter);
 
         StringWriter stringWriter = new StringWriter();
         System.out.println("transformResponse old: " + response);
@@ -271,6 +277,10 @@ public class ThymeleafBodyTransformer extends ResponseDefinitionTransformer {
         }
 
         public JwtClaims accessToken(String jwt) throws InvalidJwtException {
+            return accessToken(jwt, false);
+        }
+
+        public JwtClaims accessToken(String jwt, boolean printClaims) throws InvalidJwtException {
             JwtConsumer jwtConsumer = new JwtConsumerBuilder()
                 .setSkipAllValidators()
                 .setSkipSignatureVerification()
@@ -279,11 +289,18 @@ public class ThymeleafBodyTransformer extends ResponseDefinitionTransformer {
             try {
 
                 JwtClaims jwtClaims = jwtConsumer.processToClaims(jwt);
+                if (printClaims) {
+                    jwtClaims.getClaimNames()
+                        .forEach(name -> System.out.println("accessToken - claim " + name + ": " + jwtClaims.getClaimValue(name)));
+                }
                 return jwtClaims;
             } catch (Exception e) {
                 e.printStackTrace();
                 throw e;
             }
         }
+
     }
+
+
 }
