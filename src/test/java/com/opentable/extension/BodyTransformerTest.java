@@ -664,6 +664,24 @@ public class BodyTransformerTest {
 
 
     }
+    @Test
+    public void randomInt() {
+        wireMockRule.stubFor(post(urlMatching("/test/step1"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("content-type", "application/json")
+                .withBody("{\"var\":\"[(${utils.random().nextInt(1000)})]\"}")
+                .withTransformers("thymeleaf-body-transformer")));
+
+        given()
+            .contentType("application/json")
+            .post("/test/step1")
+            .then()
+            .statusCode(200)
+            .body("var", notNullValue());
+
+
+    }
 
     @Test
     public void thymeleafWrongVariableNameGetError() {

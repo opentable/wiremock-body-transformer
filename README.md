@@ -110,6 +110,15 @@ Evaluates to:
  ```json
 {"var":"1", "var2":"2"}
  ```
+
+## Random values
+```json
+{"var":"[(${utils.random().nextInt(1000)})]"}
+```
+Evaluates to:
+```json
+{"var":"814"}
+```
 ## Wiremock Body Transformer
 Wiremock Body Transformer is a [Wiremock](http://wiremock.org/) extension that can take the request body and interpolates the variable into the response.
 Built on the extensions platform of Wiremock, it allows your wiremock response to be dynamic and dependent on the request for a smarter testing process.

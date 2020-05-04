@@ -271,7 +271,7 @@ public class ThymeleafBodyTransformer extends ResponseDefinitionTransformer {
 
     static class Utils {
         final RsaJsonWebKey rsaJsonWebKey;
-
+        static final Random random = new Random();
         Utils() {
             try {
                 rsaJsonWebKey = RsaJwkGenerator.generateJwk(2048);
@@ -290,6 +290,9 @@ public class ThymeleafBodyTransformer extends ResponseDefinitionTransformer {
             return IntStream.range(0, size)
                 .boxed()
                 .collect(Collectors.toList());
+        }
+        public Random random() {
+            return random;
         }
 
         public JwtClaims accessToken(String jwt) throws InvalidJwtException {
