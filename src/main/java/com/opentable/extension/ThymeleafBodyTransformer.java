@@ -76,6 +76,7 @@ public class ThymeleafBodyTransformer extends ResponseDefinitionTransformer {
 
     private TemplateEngine templateEngine = initThymeleaf();
     private static final Utils utils = new Utils();
+    private static final WebhookClient http = new WebhookClient();
 
     private static TemplateEngine initThymeleaf() {
         TemplateEngine templateEngine = new TemplateEngine();
@@ -193,6 +194,7 @@ public class ThymeleafBodyTransformer extends ResponseDefinitionTransformer {
         context.setVariable("session", session);
         context.setVariable("utils", utils);
         context.setVariable("counter", counter);
+        context.setVariable("http", http);
 
         StringWriter stringWriter = new StringWriter();
         System.out.println("transformResponse old: " + response);

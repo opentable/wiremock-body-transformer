@@ -119,6 +119,24 @@ Evaluates to:
 ```json
 {"var":"814"}
 ```
+## Webhook notifications
+We can send post requests with a specific payload in the request body:
+```json
+{ "webhook": "start" }
+[(${http.post('http://localhost:8080/webhook/target','{"uuid":"123536d7-eef5-4982-964c-f04c283f0b91"}').join()})]
+```
+
+The `http://localhost:8080/webhook/target` endpoint is being called
+With the example mapping below:
+```json
+{ "webhook": "webhook" }[(${session.put('key', uuid)})]
+```
+
+We can check wiremock it has the `uuid` field sent from our webhook notification (in another endpoint):
+```json
+ {"key":"[(${session.get('key')})]"}
+```
+
 ## Wiremock Body Transformer
 Wiremock Body Transformer is a [Wiremock](http://wiremock.org/) extension that can take the request body and interpolates the variable into the response.
 Built on the extensions platform of Wiremock, it allows your wiremock response to be dynamic and dependent on the request for a smarter testing process.

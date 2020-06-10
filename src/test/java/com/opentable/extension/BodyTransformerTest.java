@@ -39,8 +39,9 @@ import static org.hamcrest.Matchers.*;
 
 public class BodyTransformerTest {
 
+    public static final int PORT_NUMBER = 8080;
     @Rule
-    public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().port(8080).extensions(new BodyTransformer(), new ThymeleafBodyTransformer()));
+    public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().port(PORT_NUMBER).extensions(new BodyTransformer(), new ThymeleafBodyTransformer()));
 
     @Test
     public void willReturnFieldWithNameValueWhenOnlyRootElementForXml() {
@@ -700,5 +701,46 @@ public class BodyTransformerTest {
 
 
     }
+
+    @Test
+    public void thymeleafWebhook() {
+        wireMockRule.stubFor(post(urlMatching("/webhook"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("content-type", "application/json")
+                .withBody("{ \"webhook\": \"start\" }[(${http.post('http://localhost:" + PORT_NUMBER + "/webhook/target','{\"uuid\":\"123536d7-eef5-4982-964c-f04c283f0b91\"}').join()})]")
+                .withTransformers("thymeleaf-body-transformer")));
+
+        wireMockRule.stubFor(post(urlMatching("/webhook/target"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("content-type", "application/json")
+                .withBody("{ \"webhook\": \"webhook\" }[(${session.put('key', uuid)})]")
+                .withTransformers("thymeleaf-body-transformer")));
+
+        wireMockRule.stubFor(post(urlMatching("/webhook/result"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("content-type", "application/json")
+                .withBody("{\"key\":\"[(${session.get('key')})]\"}")
+                .withTransformers("thymeleaf-body-transformer")));
+
+        given()
+            .contentType("application/json")
+            .post("/webhook")
+            .then()
+            .statusCode(200)
+            .body("webhook", equalTo("start"));
+
+        given()
+            .contentType("application/json")
+            .post("/webhook/result")
+            .then()
+            .statusCode(200)
+            .body("key", equalTo("123536d7-eef5-4982-964c-f04c283f0b91"));
+
+
+    }
+
 
 }
