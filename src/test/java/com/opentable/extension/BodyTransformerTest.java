@@ -21,20 +21,13 @@ import org.junit.Test;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.UUID;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.client.WireMock.any;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
-import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static com.jayway.restassured.RestAssured.given;
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.*;
 
 public class BodyTransformerTest {
@@ -533,12 +526,12 @@ public class BodyTransformerTest {
                 .withStatus(200)
                 .withHeader("content-type", "application/json")
                 .withBody("{ \"list\" : [" +
-                                         "[# th:each=\"element,index : ${utils.list(5)}\" ]" +
-                                            "[(${index.current})]" +
-                                            "[# th:if=\"!${index.last}\" ],[/]" +
-                                         "[/]" +
-                                        "]" +
-                            "}")
+                    "[# th:each=\"element,index : ${utils.list(5)}\" ]" +
+                    "[(${index.current})]" +
+                    "[# th:if=\"!${index.last}\" ],[/]" +
+                    "[/]" +
+                    "]" +
+                    "}")
                 .withTransformers("thymeleaf-body-transformer")));
 
         given()
@@ -624,6 +617,7 @@ public class BodyTransformerTest {
 
 
     }
+
     @Test
     public void counter() {
         wireMockRule.stubFor(post(urlMatching("/test/step1"))
@@ -665,6 +659,7 @@ public class BodyTransformerTest {
 
 
     }
+
     @Test
     public void randomInt() {
         wireMockRule.stubFor(post(urlMatching("/test/step1"))
@@ -708,21 +703,21 @@ public class BodyTransformerTest {
             .willReturn(aResponse()
                 .withStatus(200)
                 .withHeader("content-type", "application/json")
-                .withBody("{ \"webhook\": \"start\" }[(${http.post('http://localhost:" + PORT_NUMBER + "/webhook/target','{\"uuid\":\"123536d7-eef5-4982-964c-f04c283f0b91\"}').join()})]")
+                .withBody("{ \"webhook\": \"start\" }[(${http.post('http://localhost:" + PORT_NUMBER + "/webhook/target','{\"uuid\":\"123536d7-eef5-4982-964c-f04c283f0b91\"}', 'headerkey','headerkey').join()})]")
                 .withTransformers("thymeleaf-body-transformer")));
 
         wireMockRule.stubFor(post(urlMatching("/webhook/target"))
             .willReturn(aResponse()
                 .withStatus(200)
                 .withHeader("content-type", "application/json")
-                .withBody("{ \"webhook\": \"webhook\" }[(${session.put('key', uuid)})]")
+                .withBody("{ \"webhook\": \"webhook\" }[(${session.put('key', uuid)})] [(${session.put('headerkey', 'headerval')})]")
                 .withTransformers("thymeleaf-body-transformer")));
 
         wireMockRule.stubFor(post(urlMatching("/webhook/result"))
             .willReturn(aResponse()
                 .withStatus(200)
                 .withHeader("content-type", "application/json")
-                .withBody("{\"key\":\"[(${session.get('key')})]\"}")
+                .withBody("{\"key\":\"[(${session.get('key')})]\"} {\"headerkey\":\"[(${session.get('headerkey')})]\"}")
                 .withTransformers("thymeleaf-body-transformer")));
 
         given()
@@ -741,6 +736,4 @@ public class BodyTransformerTest {
 
 
     }
-
-
 }

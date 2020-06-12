@@ -274,6 +274,7 @@ public class ThymeleafBodyTransformer extends ResponseDefinitionTransformer {
     static class Utils {
         final RsaJsonWebKey rsaJsonWebKey;
         static final Random random = new Random();
+
         Utils() {
             try {
                 rsaJsonWebKey = RsaJwkGenerator.generateJwk(2048);
@@ -288,11 +289,13 @@ public class ThymeleafBodyTransformer extends ResponseDefinitionTransformer {
             return UUID.randomUUID().toString();
         }
 
+
         public List<Integer> list(int size) {
             return IntStream.range(0, size)
                 .boxed()
                 .collect(Collectors.toList());
         }
+
         public Random random() {
             return random;
         }

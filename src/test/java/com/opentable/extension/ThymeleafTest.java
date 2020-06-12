@@ -23,11 +23,7 @@ public class ThymeleafTest {
         context.setVariable("name", "World");
         StringWriter stringWriter = new StringWriter();
         templateEngine.process("test.html", context, stringWriter);
-        assertEquals("<html lang=\"en\">\n" +
-            "<body>\n" +
-            "    <span>Hello, World</span>\n" +
-            "</body>\n" +
-            "</html>\n", stringWriter.toString());
+        assertEquals("<htmllang=\"en\"><body><span>Hello,World</span></body></html>".replaceAll("\\s", ""), stringWriter.toString().replaceAll("\\s",""));
     }
 
     @Test
