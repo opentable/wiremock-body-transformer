@@ -698,7 +698,47 @@ public class BodyTransformerTest {
     }
 
     @Test
-    public void thymeleafWebhook() {
+    public void thymeleafPostWebhook() {
+        wireMockRule.stubFor(post(urlMatching("/webhook"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("content-type", "application/json")
+                .withBody("{ \"webhook\": \"start\" }[(${http.post('http://localhost:" + PORT_NUMBER + "/webhook/target','{\"uuid\":\"123536d7-eef5-4982-964c-f04c283f0b91\"}').join()})]")
+                .withTransformers("thymeleaf-body-transformer")));
+
+        wireMockRule.stubFor(post(urlMatching("/webhook/target"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("content-type", "application/json")
+                .withBody("{ \"webhook\": \"webhook\" }[(${session.put('key', uuid)})]")
+                .withTransformers("thymeleaf-body-transformer")));
+
+        wireMockRule.stubFor(post(urlMatching("/webhook/result"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("content-type", "application/json")
+                .withBody("{\"key\":\"[(${session.get('key')})]\"}")
+                .withTransformers("thymeleaf-body-transformer")));
+
+        given()
+            .contentType("application/json")
+            .post("/webhook")
+            .then()
+            .statusCode(200)
+            .body("webhook", equalTo("start"));
+
+        given()
+            .contentType("application/json")
+            .post("/webhook/result")
+            .then()
+            .statusCode(200)
+            .body("key", equalTo("123536d7-eef5-4982-964c-f04c283f0b91"));
+
+
+    }
+
+    @Test
+    public void thymeleafPostWebhookWithHeader() {
         wireMockRule.stubFor(post(urlMatching("/webhook"))
             .willReturn(aResponse()
                 .withStatus(200)
@@ -717,7 +757,7 @@ public class BodyTransformerTest {
             .willReturn(aResponse()
                 .withStatus(200)
                 .withHeader("content-type", "application/json")
-                .withBody("{\"key\":\"[(${session.get('key')})]\"} {\"headerkey\":\"[(${session.get('headerkey')})]\"}")
+                .withBody("{\"key\":\"[(${session.get('key')})]\", \"header\":\"[(${session.get('headerkey')})]\"}")
                 .withTransformers("thymeleaf-body-transformer")));
 
         given()
@@ -732,7 +772,8 @@ public class BodyTransformerTest {
             .post("/webhook/result")
             .then()
             .statusCode(200)
-            .body("key", equalTo("123536d7-eef5-4982-964c-f04c283f0b91"));
+            .body("key", equalTo("123536d7-eef5-4982-964c-f04c283f0b91"))
+            .body("header", equalTo("headerval"));
 
 
     }
