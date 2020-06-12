@@ -37,40 +37,21 @@ public class WebhookClient {
             .build();
     }
 
-    public CompletableFuture post(String url, String body, String headerKey, String headerValue) {
-
-        CompletableFuture future = new CompletableFuture();
-        scheduler.schedule(
-            () -> {
-                try {
-                    HttpUriRequest request = buildPost(url, body, headerKey, headerValue);
-                    HttpResponse response = httpClient.execute(request);
-                    System.out.println(
-                        String.format("post - request to %s returned status %s\n%s\n\n%s",
-                            url,
-                            response.getStatusLine(),
-                            EntityUtils.toString(response.getEntity()), body
-                        )
-                    );
-                    future.complete(response);
-                } catch (Exception e) {
-                    future.completeExceptionally(e);
-                    throwUnchecked(e);
-                }
-            },
-            2L,
-            SECONDS
-        );
-        return future;
-    }
-
     public CompletableFuture post(String url, String body) {
+        return postInternal(url, body);
+    }
+
+    public CompletableFuture post(String url, String body, String headerKey, String headerValue) {
+        return postInternal(url, body, headerKey, headerValue);
+    }
+
+    CompletableFuture postInternal(String url, String body, String... headers) {
 
         CompletableFuture future = new CompletableFuture();
         scheduler.schedule(
             () -> {
                 try {
-                    HttpUriRequest request = buildPost(url, body, null);
+                    HttpUriRequest request = buildPost(url, body, headers);
                     HttpResponse response = httpClient.execute(request);
                     System.out.println(
                         String.format("post - request to %s returned status %s\n%s\n\n%s",
@@ -90,7 +71,6 @@ public class WebhookClient {
         );
         return future;
     }
-
 
     private static HttpUriRequest buildPost(String url, String body, String... args) throws UnsupportedEncodingException {
         HttpPost httpPost = new HttpPost(url);

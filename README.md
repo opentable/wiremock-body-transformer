@@ -121,14 +121,14 @@ Evaluates to:
 ```
 ## Webhook notifications
 We can send post requests with a specific payload in the request body:
-```json
+```
 { "webhook": "start" }
 [(${http.post('http://localhost:8080/webhook/target','{"uuid":"123536d7-eef5-4982-964c-f04c283f0b91"}').join()})]
 ```
 
 The `http://localhost:8080/webhook/target` endpoint is being called
 With the example mapping below:
-```json
+```
 { "webhook": "webhook" }[(${session.put('key', uuid)})]
 ```
 
