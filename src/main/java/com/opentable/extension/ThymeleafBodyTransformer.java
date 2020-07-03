@@ -188,7 +188,6 @@ public class ThymeleafBodyTransformer extends ResponseDefinitionTransformer {
     static AtomicInteger counter = new AtomicInteger();
 
     private String transformResponse(Map<String, Object> requestObjects, String response) {
-
         Context context = new Context();
         context.setVariables(requestObjects);
         context.setVariable("session", session);

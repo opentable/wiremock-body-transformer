@@ -6,7 +6,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 import security.TrustAllCerts;
 
 import javax.net.ssl.SSLContext;
@@ -20,7 +19,6 @@ import static com.github.tomakehurst.wiremock.common.Exceptions.throwUnchecked;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class WebhookClient {
-
     private final ScheduledExecutorService scheduler;
     private final HttpClient httpClient;
 
@@ -53,13 +51,6 @@ public class WebhookClient {
                 try {
                     HttpUriRequest request = buildPost(url, body, headers);
                     HttpResponse response = httpClient.execute(request);
-                    System.out.println(
-                        String.format("post - request to %s returned status %s\n%s\n\n%s",
-                            url,
-                            response.getStatusLine(),
-                            EntityUtils.toString(response.getEntity()), body
-                        )
-                    );
                     future.complete(response);
                 } catch (Exception e) {
                     future.completeExceptionally(e);
