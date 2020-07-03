@@ -197,15 +197,12 @@ public class ThymeleafBodyTransformer extends ResponseDefinitionTransformer {
         context.setVariable("http", http);
 
         StringWriter stringWriter = new StringWriter();
-        System.out.println("transformResponse old: " + response);
         try {
             templateEngine.process(response, context, stringWriter);
         } catch (RuntimeException ex) {
             ex.printStackTrace();
             throw ex;
         }
-        System.out.println("transformResponse new: " + stringWriter.toString());
-
 
         return stringWriter.toString();
     }
