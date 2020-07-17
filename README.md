@@ -1,3 +1,144 @@
+## Changes to the body transformer
+
+For a given request
+```json
+{
+    "request": {
+        "method": "GET",
+        "urlPattern": "/step1/slash1/[0-9]+?/slash2/[0-9]+?.*"
+    },
+    "response": {
+        "fixedDelayMilliseconds": 200,
+        "status": 200,
+        "bodyFileName": "step1.json",
+        "transformers": ["thymeleaf-body-transformer"],
+        "transformerParameters": {
+            "urlRegex" : "/step1/slash1/(?<slash1Var>.*?)/slash2/(?<slash2Var>.*?)\\?one=(?<oneVar>.*?)\\&two=(?<twoVar>.*?)\\&three=(?<threeVar>.*?)"
+        }
+    }
+}
+```
+step1.json
+```
+{"var":"[(${foo})]"}
+[(${session.put('foo', foo)})]
+```
+
+We can store some data in a session object. In the next call we can retrieve that information:
+
+```json
+{
+    "request": {
+        "method": "GET",
+        "urlPattern": "/step2/slash1/[0-9]+?/slash2/[0-9]+?.*"
+    },
+    "response": {
+        "fixedDelayMilliseconds": 200,
+        "status": 200,
+        "bodyFileName": "step2.json",
+        "transformers": ["thymeleaf-body-transformer"],
+        "transformerParameters": {
+            "urlRegex" : "/step2/slash1/(?<slash1Var>.*?)/slash2/(?<slash2Var>.*?)\\?one=(?<oneVar>.*?)\\&two=(?<twoVar>.*?)\\&three=(?<threeVar>.*?)"
+        }
+    }
+}
+```
+
+step2.json
+```json
+{"var":"[(${session.get('foo')})]"}
+```
+
+And reuse it for a different response
+
+## Lists
+
+```
+{ "list" : [
+                [# th:each="element,index : ${utils.list(5)}" ]
+                [(${index.current})]
+                [# th:if="!${index.last}" ],[/]
+            [/]
+            ]
+}
+```
+produces
+```json
+{ "list" : [0,1,2,3,4]}
+```
+
+## JWT support
+
+We can extract values from the JWT  by passing the header value to the `accessToken` util method:
+```
+{"var":"[(${utils.accessToken(xjwt).getClaimValue('name')})]"}
+```
+
+Based on the expression above, the `x-jwt` header would transform the var value to 'John Doe'
+
+```java
+ given()
+            .contentType("application/json")
+            .header("x-jwt", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c")
+            .post("/test/step1")
+            .then()
+            .statusCode(200)
+            .body("var", equalTo("John Doe"));
+```
+
+We can generate a jwt with a specified subject
+```json
+{"jwt":"[(${utils.jwt('123')})]"}
+```
+Result is:
+```json
+{"jwt":"eyJhbGciOiJSUzI1NiJ9.eyJleHAiOjE1ODgyODI4NjUsImp0aSI6ImJPYm52VXQ2dTZUN05SWEJwdWFFOEEiLCJpYXQiOjE1ODgyODIyNjUsIm5iZiI6MTU4ODI4MjE0NSwic3ViIjoiMTIzIn0.fwTDFWFNHR5HNq47ctKDLLP-5ML2h4sAh6dkZfxAix7kQ7DoLUqHusUm21deRe6VnkYisvoqV0Qyi_p4QgJFNzB6rgODIM41SjvopelQdueVSys9eNnTVr5nmwyyNLvzuutfd0xzYlJyHgjlAMa8Yw2RwxJRvKJo2NtsV02LpmWTUHQoccGfkl1yGabsfilGa-P4G4YpOWvKmJcwBpFwMp50AHXYY1oPhIsunaeeIskhgiEbhQMvBIMCu_R_UbGRNTEldGleqSGjsKqhkUDNi-q7VIBMiPSQYolzhMrkRbq891BzM1odEGviToMU1sEkgFP287f-_w4UqqD14tFWWA"}
+```
+## Time support
+```
+{"var":"[(${#temporals.formatISO(#temporals.createNow())})]"}
+```
+Evaluates to:
+```json
+{"var":"2020-04-30T15:04:58.225+0000"}
+```
+## Global counter
+```json
+{"var":"[(${counter.incrementAndGet()})]", "var2":"[(${counter.incrementAndGet()})]"}
+```
+Evaluates to:
+ ```json
+{"var":"1", "var2":"2"}
+ ```
+
+## Random values
+```json
+{"var":"[(${utils.random().nextInt(1000)})]"}
+```
+Evaluates to:
+```json
+{"var":"814"}
+```
+## Webhook notifications
+We can send post requests with a specific payload in the request body:
+```
+{ "webhook": "start" }
+[(${http.post('http://localhost:8080/webhook/target','{"uuid":"123536d7-eef5-4982-964c-f04c283f0b91"}').join()})]
+```
+
+The `http://localhost:8080/webhook/target` endpoint is being called
+With the example mapping below:
+```
+{ "webhook": "webhook" }[(${session.put('key', uuid)})]
+```
+
+We can check wiremock it has the `uuid` field sent from our webhook notification (in another endpoint):
+```json
+ {"key":"[(${session.get('key')})]"}
+```
+### Env variables
+With the `debug=true` env variable we can print logs to debug
+
 ## Wiremock Body Transformer
 Wiremock Body Transformer is a [Wiremock](http://wiremock.org/) extension that can take the request body and interpolates the variable into the response.
 Built on the extensions platform of Wiremock, it allows your wiremock response to be dynamic and dependent on the request for a smarter testing process.

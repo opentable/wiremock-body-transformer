@@ -24,7 +24,7 @@
 
 	<groupId>com.opentable</groupId>
 	<artifactId>wiremock-body-transformer</artifactId>
-	<version>1.1.7-SNAPSHOT</version>
+	<version>1.1.8-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>Wiremock Body Transformer</name>
 	<description>A Wiremock extension to transform the response body.</description>
@@ -54,6 +54,34 @@
 	</scm>
 
 	<dependencies>
+		<!-- https://mvnrepository.com/artifact/org.thymeleaf/thymeleaf -->
+		<dependency>
+			<groupId>org.thymeleaf</groupId>
+			<artifactId>thymeleaf</artifactId>
+			<version>3.0.11.RELEASE</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.thymeleaf.extras</groupId>
+			<artifactId>thymeleaf-extras-java8time</artifactId>
+			<version>3.0.1.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>3.8.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.bitbucket.b_c</groupId>
+			<artifactId>jose4j</artifactId>
+			<version>0.6.5</version>
+		</dependency>
 		<dependency>
 			<groupId>com.github.tomakehurst</groupId>
 			<artifactId>wiremock</artifactId>
