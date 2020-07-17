@@ -74,11 +74,13 @@ public class ThymeleafBodyTransformer extends ResponseDefinitionTransformer {
         return new XmlMapper(configuration);
     }
 
+    private static boolean isDebugOn = Boolean.parseBoolean(System.getenv("debug"));
     private TemplateEngine templateEngine = initThymeleaf();
     private static final Utils utils = new Utils();
     private static final WebhookClient http = new WebhookClient();
 
     private static TemplateEngine initThymeleaf() {
+        System.out.println("initThymeleaf - isDebugOn: " + isDebugOn);
         TemplateEngine templateEngine = new TemplateEngine();
         templateEngine.addDialect(new Java8TimeDialect());
 
@@ -197,6 +199,9 @@ public class ThymeleafBodyTransformer extends ResponseDefinitionTransformer {
 
         StringWriter stringWriter = new StringWriter();
         try {
+            if (isDebugOn) {
+                System.out.println("transformResponse - response: " + response + ", requestObjects: " + Arrays.toString(requestObjects.entrySet().toArray()));
+            }
             templateEngine.process(response, context, stringWriter);
         } catch (RuntimeException ex) {
             ex.printStackTrace();

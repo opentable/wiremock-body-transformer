@@ -136,6 +136,8 @@ We can check wiremock it has the `uuid` field sent from our webhook notification
 ```json
  {"key":"[(${session.get('key')})]"}
 ```
+### Env variables
+With the `debug=true` env variable we can print logs to debug
 
 ## Wiremock Body Transformer
 Wiremock Body Transformer is a [Wiremock](http://wiremock.org/) extension that can take the request body and interpolates the variable into the response.

@@ -24,7 +24,7 @@
 
 	<groupId>com.opentable</groupId>
 	<artifactId>wiremock-body-transformer</artifactId>
-	<version>1.1.7-SNAPSHOT</version>
+	<version>1.1.8-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>Wiremock Body Transformer</name>
 	<description>A Wiremock extension to transform the response body.</description>
