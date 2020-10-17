@@ -35,7 +35,7 @@ public class BodyTransformerTest {
 
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().port(8080).extensions(new BodyTransformer()));
-    
+
     @Test
     public void willReturnFieldWithNameValueWhenOnlyRootElementForXml() {
         wireMockRule.stubFor(post(urlMatching("/test/rootXml"))
@@ -44,7 +44,7 @@ public class BodyTransformerTest {
                 .withHeader("content-type", "application/json")
                 .withBody("{\"var\":\"$(value)\"}")
                 .withTransformers("body-transformer")));
-        
+
         given()
             .contentType("application/json")
             .body("<var>101</var>")
@@ -53,7 +53,7 @@ public class BodyTransformerTest {
             .statusCode(200)
             .body("var", equalTo("101"));
     }
-    
+
     @Test
     public void testKeyValueAsQueryString() {
         wireMockRule.stubFor(get(urlEqualTo("/test?foo=bar"))
@@ -338,7 +338,7 @@ public class BodyTransformerTest {
                 .withBody("{\"slash1\":\"$(slash1Var)\", \"slash2\":\"$(slash2Var)\", \"one\":\"$(oneVar)\", \"two\":\"$(twoVar)\", \"three\":\"$(threeVar)\"}")
                 .withTransformers("body-transformer")
                 .withTransformerParameter("urlRegex", "/params/slash1/(?<>.*?)/slash2/(?<slash2Var>.*?)\\?one=(?<oneVar>.*?)\\&two=(?<twoVar>.*?)\\&three=(?<threeVar>.*?)")));
-        
+
         given()
 			.contentType("application/json")
 			.when()
@@ -346,7 +346,7 @@ public class BodyTransformerTest {
 			.then()
 			.statusCode(500);
 	}
-    
+
     @Test
     public void urlRegexParameterWillReplaceFieldFromJsonBodyWithSameName() {
         wireMockRule.stubFor(post(urlMatching("/param/[0-9]+?"))
@@ -356,7 +356,7 @@ public class BodyTransformerTest {
                 .withBody("{\"var\":\"$(var)\",\"got\":\"it\"}")
                 .withTransformers("body-transformer")
                 .withTransformerParameter("urlRegex", "/param/(?<var>.*?)")));
-        
+
         given()
             .contentType("application/json")
             .body("{\"var\":\"11\"}")
@@ -367,7 +367,7 @@ public class BodyTransformerTest {
             .body("var", equalTo("10"))
             .body("got", equalTo("it"));
     }
-    
+
     @Test
     public void urlRegexParameterWithNameValueWillReplaceRootFieldFromXmlBodyWhenOnlyRootField() {
         wireMockRule.stubFor(post(urlMatching("/param/[0-9]+?"))
@@ -377,7 +377,7 @@ public class BodyTransformerTest {
                 .withBody("{\"returnedField\":\"$(value)\"}")
                 .withTransformers("body-transformer")
                 .withTransformerParameter("urlRegex", "/param/(?<value>.*?)")));
-    
+
         given()
             .contentType("application/json")
             .body("<test>11</test>")
@@ -386,7 +386,7 @@ public class BodyTransformerTest {
             .statusCode(200)
             .body("returnedField", equalTo("10"));
     }
-    
+
     @Test
     public void urlRegexParameterWillReplaceFieldFromXmlBodyWithSameName() {
         wireMockRule.stubFor(post(urlMatching("/param/[0-9]+?"))
@@ -396,7 +396,7 @@ public class BodyTransformerTest {
                 .withBody("{\"var\":\"$(var)\",\"got\":\"it\"}")
                 .withTransformers("body-transformer")
                 .withTransformerParameter("urlRegex", "/param/(?<var>.*?)")));
-        
+
         given()
             .contentType("application/json")
             .body("<root><var>11</var></root>")
@@ -406,7 +406,7 @@ public class BodyTransformerTest {
             .body("var", equalTo("10"))
             .body("got", equalTo("it"));
     }
-    
+
     @Test
     public void urlRegexParameterWillReplaceFieldFromKeyValueBodyRequestWithSameName() {
         wireMockRule.stubFor(post(urlMatching("/param/[0-9]+?"))
@@ -416,7 +416,7 @@ public class BodyTransformerTest {
                 .withBody("{\"var\":\"$(var)\",\"got\":\"it\"}")
                 .withTransformers("body-transformer")
                 .withTransformerParameter("urlRegex", "/param/(?<var>.*?)")));
-        
+
         given()
             .contentType("application/x-www-form-urlencoded")
             .body("var=11&got=it")
@@ -426,7 +426,7 @@ public class BodyTransformerTest {
             .body("var", equalTo("10"))
             .body("got", equalTo("it"));
     }
-    
+
 	@Test
 	public void testEmptyBodyAndEmptyBodyFile() {
     	wireMockRule.stubFor(any(urlMatching("/any/emptyBodyAndEmptyBodyFile"))
@@ -443,5 +443,49 @@ public class BodyTransformerTest {
 
 		wireMockRule.verify(getRequestedFor(urlMatching("/any/emptyBodyAndEmptyBodyFile")));
 	}
+
+    @Test
+    public void injectGenUUIDPattern() {
+        wireMockRule.stubFor(post(urlEqualTo("/get/this"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("content-type", "application/json")
+                .withBody("{\"id\":\"$(!UUID)\", \"got\":\"it\"}")
+                .withTransformers("body-transformer")));
+
+        given()
+            .contentType("application/json")
+            .body("{\"var\":1111}")
+            .when()
+            .post("/get/this")
+            .then()
+            .statusCode(200)
+            .body("id", isA(String.class))
+            .body("got", equalTo("it"));
+
+        wireMockRule.verify(postRequestedFor(urlEqualTo("/get/this")));
+    }
+
+    @Test
+    public void injectGenDateTimePattern() {
+        wireMockRule.stubFor(post(urlEqualTo("/get/this"))
+            .willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("content-type", "application/json")
+                .withBody("{\"id\":\"$(!DateTime)\", \"got\":\"it\"}")
+                .withTransformers("body-transformer")));
+
+        given()
+            .contentType("application/json")
+            .body("{\"var\":1111}")
+            .when()
+            .post("/get/this")
+            .then()
+            .statusCode(200)
+            .body("id", isA(String.class))
+            .body("got", equalTo("it"));
+
+        wireMockRule.verify(postRequestedFor(urlEqualTo("/get/this")));
+    }
 
 }
