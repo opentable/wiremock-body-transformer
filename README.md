@@ -1,3 +1,8 @@
+Update:
+
+This project has not had updates in years, and there's no one at OpenTable interested in maintaining. If you are, let us know (platform-architecture@opentable.com). Archiving for now, as it's, old, has security vulnerabilities, and I seriously doubt works on newer wiremock
+
+
 ## Wiremock Body Transformer
 Wiremock Body Transformer is a [Wiremock](http://wiremock.org/) extension that can take the request body and interpolates the variable into the response.
 Built on the extensions platform of Wiremock, it allows your wiremock response to be dynamic and dependent on the request for a smarter testing process.
