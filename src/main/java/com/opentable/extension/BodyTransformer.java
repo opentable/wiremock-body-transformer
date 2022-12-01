@@ -15,6 +15,7 @@
 package com.opentable.extension;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.xml.JacksonXmlModule;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
@@ -25,16 +26,13 @@ import com.github.tomakehurst.wiremock.extension.ResponseDefinitionTransformer;
 import com.github.tomakehurst.wiremock.http.Request;
 import com.github.tomakehurst.wiremock.http.ResponseDefinition;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -45,6 +43,7 @@ public class BodyTransformer extends ResponseDefinitionTransformer {
     
     private static final Pattern interpolationPattern = Pattern.compile("\\$\\(.*?\\)");
     private static final Pattern randomIntegerPattern = Pattern.compile("!RandomInteger");
+    private static final Pattern arrayIndexPattern = Pattern.compile("\\[\\d*\\]");
 
     private static ObjectMapper jsonMapper = initJsonMapper();
     private static ObjectMapper xmlMapper = initXmlMapper();
@@ -56,7 +55,9 @@ public class BodyTransformer extends ResponseDefinitionTransformer {
     private static ObjectMapper initXmlMapper() {
         JacksonXmlModule configuration = new JacksonXmlModule();
         configuration.setXMLTextElementName("value");
-        return new XmlMapper(configuration);
+
+        SimpleModule module = new SimpleModule().addDeserializer(Object.class, new FixedUntypedObjectDeserializer());
+        return new XmlMapper(configuration).registerModule(module);
     }
     
     @Override
@@ -163,7 +164,7 @@ public class BodyTransformer extends ResponseDefinitionTransformer {
         }
 
         return getValueFromRequestObject(group, requestObject);
-    }
+    }   
 
     private CharSequence getValueFromRequestObject(String group, Map requestObject) {
         String fieldName = group.substring(2, group.length() - 1);
@@ -171,10 +172,48 @@ public class BodyTransformer extends ResponseDefinitionTransformer {
         Object tempObject = requestObject;
         for (String field : fieldNames) {
             if (tempObject instanceof Map) {
-                tempObject = ((Map) tempObject).get(field);
+                Pair<String, Integer> pair = getClearedFieldAndIndex(field);
+
+                tempObject = ((Map) tempObject).get(pair.getLeft());
+
+                if (pair.getRight() != null) {
+                    if (tempObject instanceof List) {
+                        try {
+                            tempObject = ((List) tempObject).get(pair.getRight());
+                        } catch (Exception e) {
+                            System.err.println(String.format("[Body parse error] couldn't get referenced item from list: %s", e.getMessage()));
+                            throw new RuntimeException(e);
+                        }
+                    } else {
+                        System.err.println(String.format("[Body parse error] the referenced item is not list: %s", field));
+                        throw new RuntimeException();
+                    }
+                }
             }
         }
         return String.valueOf(tempObject);
+    }
+
+    /**
+     * return:
+     * 1. cleared field and index for field with index like "item[1]"
+     * 2. field and null for field without index like "item"
+     *
+     * cleared field - the field transformed from "item[1]" to "item"
+     *
+     */
+    private Pair<String, Integer> getClearedFieldAndIndex(final String field) {
+        Matcher matcher = arrayIndexPattern.matcher(field);
+
+        return matcher.find()
+            ? Pair.of(
+                getClearedField(field),
+                Integer.valueOf(matcher.group().substring(1, matcher.group().length() - 1)))
+            : Pair.of(field, null);
+    }
+
+    private String getClearedField(String field) {
+        return field.split("\\[")[0];
     }
 
     private boolean hasEmptyResponseBody(ResponseDefinition responseDefinition) {
